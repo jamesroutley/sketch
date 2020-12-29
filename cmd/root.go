@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/jamesroutley/sketch/sketch"
@@ -41,7 +42,15 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		sketch.Repl()
+		if len(args) > 0 {
+			if err := sketch.RunFile(args[0]); err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
+		if err := sketch.Repl(); err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

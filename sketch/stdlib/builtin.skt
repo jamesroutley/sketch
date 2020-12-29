@@ -1,0 +1,5 @@
+(defmacro!
+    defn
+    (fn*
+        (name args body)
+        (quasiquote (def! (unquote name) (fn* (unquote args) (unquote body))))))
