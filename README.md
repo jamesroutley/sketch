@@ -18,7 +18,7 @@ loop). Here, you can use the language interactively. For example, you can:
 
 **Perform maths calculations**
 
-```
+```racket
 user> (+ 1 1)
 2
 ```
@@ -34,7 +34,7 @@ which takes two arguments, and returns the sum of them.
 
 **Define variables**
 
-```
+```racket
 user> (def! a 1)
 1
 user> a
@@ -43,7 +43,7 @@ user> a
 
 **Define your own functions**
 
-```
+```racket
 user> (defn add-1 (x) (+ x 1))
 #<function>
 user> (add-1 2)
