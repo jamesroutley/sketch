@@ -104,7 +104,6 @@ func rootEnvironment() (*environment.Env, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(stdlibDir)
 
 	for _, filename := range stdlibFiles {
 		if _, err := Rep(fmt.Sprintf(`(load-file "%s")`, filename), env); err != nil {

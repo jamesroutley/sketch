@@ -32,9 +32,20 @@ Unlike other languages which use infix notation for maths (e.g. `1 + 1`),
 there's no special syntax for maths functions. Addition just calls a function,
 which takes two arguments, and returns the sum of them.
 
-**Defining our own functions**
+**Define variables**
+
+```
+user> (def! a 1)
+1
+user> a
+1
+```
+
+**Define your own functions**
 
 ```
 user> (defn add-1 (x) (+ x 1))
 #<function>
+user> (add-1 2)
+3
 ```
