@@ -49,3 +49,24 @@ user> (defn add-1 (x) (+ x 1))
 user> (add-1 2)
 3
 ```
+
+You can also define anonymous functions with:
+
+```racket
+user> (fn* (x) (+ x 1))
+#<function>
+user> ((fn* (x) (+ x 1)) 2)
+3
+```
+
+Because `def!` assigns a name to a value, you can use it in conjunction with
+`fn*` to create a named function:
+
+```racket
+user> (def! add-1 (fn* (x) (+ x 1)))
+#<function>
+```
+
+In fact, this is exactly what `defn` is doing - `defn` is just syntactic sugar
+which is expanded to `(def! ... (fn* ...))` by the interpreter before it's
+evaluated.
