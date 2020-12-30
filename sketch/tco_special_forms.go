@@ -41,7 +41,7 @@ func evalTCOSpecialForm(
 	var evaluator tcoSpecialFormEvaluator
 
 	switch operator.Value {
-	case "let*":
+	case "let":
 		evaluator = evalLet
 	case "if":
 		evaluator = evalIf
@@ -63,27 +63,27 @@ func evalTCOSpecialForm(
 // statement in that environment.
 // e.g:
 //
-// > (let* (a 1 b (+ a 1)) b)
+// > (let (a 1 b (+ a 1)) b)
 // 2 ; a == b, b == a+1 == 2
 func evalLet(
 	operator *types.MalSymbol, args []types.MalType, env *environment.Env,
 ) (newAST types.MalType, newEnv *environment.Env, err error) {
 	if len(args) != 2 {
-		return nil, nil, fmt.Errorf("let* takes 2 args")
+		return nil, nil, fmt.Errorf("let takes 2 args")
 	}
 	bindingList, ok := args[0].(*types.MalList)
 	if !ok {
-		return nil, nil, fmt.Errorf("let*: first arg isn't a list")
+		return nil, nil, fmt.Errorf("let: first arg isn't a list")
 	}
 	if len(bindingList.Items)%2 != 0 {
-		return nil, nil, fmt.Errorf("let*: first arg doesn't have an even number of items")
+		return nil, nil, fmt.Errorf("let: first arg doesn't have an even number of items")
 	}
 
 	childEnv := env.ChildEnv()
 	for i := 0; i < len(bindingList.Items); i += 2 {
 		key, ok := bindingList.Items[i].(*types.MalSymbol)
 		if !ok {
-			return nil, nil, fmt.Errorf("let*: binding list: arg %d isn't a symbol", i)
+			return nil, nil, fmt.Errorf("let: binding list: arg %d isn't a symbol", i)
 		}
 		value, err := Eval(bindingList.Items[i+1], childEnv)
 		if err != nil {

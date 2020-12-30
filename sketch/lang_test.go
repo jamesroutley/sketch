@@ -29,17 +29,17 @@ func TestLet(t *testing.T) {
 	cases := []*TestCase{
 		{
 			name:     "let evaluates second arg in the newly created environment",
-			input:    "(let* (a 1) a)",
+			input:    "(let (a 1) a)",
 			expected: "1",
 		},
 		{
 			name:     "let evaluates the even arguments in the parameter list",
-			input:    "(let* (a (+ 1 1)) a)",
+			input:    "(let (a (+ 1 1)) a)",
 			expected: "2",
 		},
 		{
 			name:     "later arguments in the parameter list can refer to earlier ones",
-			input:    "(let* (a 1 b (+ 1 a)) b)",
+			input:    "(let (a 1 b (+ 1 a)) b)",
 			expected: "2",
 		},
 	}
