@@ -2,7 +2,6 @@ package reader
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -43,15 +42,21 @@ func ReadStr(s string) (types.MalType, error) {
 	return ReadForm(reader)
 }
 
-func Tokenize(s string) []string {
-	re := regexp.MustCompile(`[\s,]*(~@|[\[\]{}()'` + "`" + `~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"` + "`" + `,;)]*)`)
-	return re.FindAllString(s, -1)
-}
-
 func ReadForm(reader *Reader) (types.MalType, error) {
 	token, err := reader.Peek()
 	if err != nil {
 		return nil, err
+	}
+
+	if strings.HasPrefix(token, ";") {
+		// Skip this token
+		_, err := reader.Next()
+		if err != nil {
+			return nil, err
+		}
+		// TODO: would be nice if this didn't recurse
+		return ReadForm(reader)
+
 	}
 	switch token {
 	case "(":
