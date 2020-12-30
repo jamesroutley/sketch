@@ -124,7 +124,7 @@ func evalTCOSpecialForm(
 		if err != nil {
 			return nil, nil, err
 		}
-		if IsTruthy(condition) {
+		if isTruthy(condition) {
 			return args[1], env, nil
 		}
 

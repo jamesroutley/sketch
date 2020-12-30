@@ -133,9 +133,9 @@ func evalAST(ast types.MalType, env *environment.Env) (types.MalType, error) {
 	return ast, nil
 }
 
-// IsTruthy returns a type's truthiness. Currently: it's falsy if the type is
+// isTruthy returns a type's truthiness. Currently: it's falsy if the type is
 // `nil` or the boolean 'false'. All other values are truthy.
-func IsTruthy(t types.MalType) bool {
+func isTruthy(t types.MalType) bool {
 	switch token := t.(type) {
 	case *types.MalNil:
 		return false
