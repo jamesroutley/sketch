@@ -32,7 +32,7 @@ func evalSpecialForm(
 	var evaluator specialFormEvaluator
 
 	switch operator.Value {
-	case "fn*":
+	case "fn":
 		evaluator = evalFn
 	case "def!":
 		evaluator = evalDef
@@ -56,21 +56,21 @@ func evalSpecialForm(
 // Create a new function.
 //
 // e.g:
-// > (def! add1 (fn* (a) (+ a 1)))
+// > (def! add1 (fn (a) (+ a 1)))
 // #<function>
 // > (add1 2)
 // 3
 func evalFn(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
 ) (newAST types.MalType, err error) {
 	if len(args) != 2 {
-		return nil, fmt.Errorf("fn* statements must have two arguments, got %d", len(args))
+		return nil, fmt.Errorf("fn statements must have two arguments, got %d", len(args))
 	}
 
-	// arguments is the first argument supplied to the fn* function (e.g.
+	// arguments is the first argument supplied to the fn function (e.g.
 	// `(a)` in the example above)
 	arguments, ok := args[0].(*types.MalList)
 	if !ok {
-		return nil, fmt.Errorf("fn* statements must have a list as the first arg")
+		return nil, fmt.Errorf("fn statements must have a list as the first arg")
 	}
 	// Cast it from a list of MalType to a list of MalSymbol
 	binds := make([]*types.MalSymbol, len(arguments.Items))
@@ -78,7 +78,7 @@ func evalFn(operator *types.MalSymbol, args []types.MalType, env *environment.En
 		bind, ok := a.(*types.MalSymbol)
 		if !ok {
 			// TODO: improve this - say which argument isn't a symbol
-			return nil, fmt.Errorf("fn* statements must have a list of symbols as the first arg")
+			return nil, fmt.Errorf("fn statements must have a list of symbols as the first arg")
 		}
 		binds[i] = bind
 	}

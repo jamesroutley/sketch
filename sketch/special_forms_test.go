@@ -6,12 +6,12 @@ func TestSpecialForm_Fn(t *testing.T) {
 	cases := []*TestCase{
 		{
 			name:     "fn defines a new function",
-			input:    "(fn* (x) (x))",
+			input:    "(fn (x) (x))",
 			expected: "#<function>",
 		},
 		{
 			name:     "fn defines a new function, which is callable",
-			input:    "((fn* (x) (+ 1 x)) 1)",
+			input:    "((fn (x) (+ 1 x)) 1)",
 			expected: "2",
 		},
 	}
@@ -59,7 +59,7 @@ func TestSpecialForm_Defmacro(t *testing.T) {
 		{
 			name: "defmacro defines a new macro",
 			input: `
-(defmacro! nil!  (fn*
+(defmacro! nil!  (fn
 	(name)
 	(quasiquote (def! (unquote name) nil))))`,
 			expected: "#<function>",
@@ -68,7 +68,7 @@ func TestSpecialForm_Defmacro(t *testing.T) {
 			name: "defmacro defines a new macro, which is callable",
 			input: `
 (do
-	(defmacro! nil!  (fn*
+	(defmacro! nil!  (fn
 		(name)
 		(quasiquote (def! (unquote name) nil))))
 	(def! a 1)
@@ -87,7 +87,7 @@ func TestSpecialForm_Macroexpand(t *testing.T) {
 			name: "macroexpand expands and prints a macro, without evaluating it",
 			input: `
 (do
-	(defmacro! nil! (fn* (name) (quasiquote (def! (unquote name) nil))))
+	(defmacro! nil! (fn (name) (quasiquote (def! (unquote name) nil))))
 	(macroexpand (nil! a))
 )
 `,

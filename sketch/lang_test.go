@@ -61,12 +61,12 @@ func TestFn(t *testing.T) {
 	cases := []*TestCase{
 		{
 			name:     "fn defines a function closure",
-			input:    "(fn* (a) a)",
+			input:    "(fn (a) a)",
 			expected: "#<function>",
 		},
 		{
 			name:     "fn defines a function closure, which can be called",
-			input:    "((fn* (a) a) 100)",
+			input:    "((fn (a) a) 100)",
 			expected: "100",
 		},
 	}
@@ -83,7 +83,7 @@ func TestRecursion(t *testing.T) {
 			name: "deep recursion - this will overflow if `if expression` TCO not implemented",
 			input: `
 (do
-	(def! count-to (fn* (num) (if (= num 0) nil (count-to (- num 1)))))
+	(def! count-to (fn (num) (if (= num 0) nil (count-to (- num 1)))))
 	(count-to 5000000)
 )`,
 			expected: "nil",
