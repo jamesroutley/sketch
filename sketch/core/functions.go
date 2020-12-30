@@ -9,6 +9,7 @@ import (
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/jamesroutley/sketch/sketch/types"
+	"golang.org/x/sync/errgroup"
 )
 
 func prn(args ...types.MalType) (types.MalType, error) {
@@ -222,6 +223,45 @@ func concat(args ...types.MalType) (types.MalType, error) {
 
 	return &types.MalList{
 		Items: allItems,
+	}, nil
+}
+
+// sketchMap implements map - i.e. run func for all items in a list
+func sketchMap(args ...types.MalType) (types.MalType, error) {
+	function, ok := args[0].(*types.MalFunction)
+	if !ok {
+		return nil, fmt.Errorf("first arg to map must be a function")
+	}
+	list, ok := args[1].(*types.MalList)
+	if !ok {
+		return nil, fmt.Errorf("second arg to map must be a list")
+	}
+
+	// Short circuit
+	if len(list.Items) == 0 {
+		return list, nil
+	}
+
+	g := new(errgroup.Group)
+	mappedItems := make([]types.MalType, len(list.Items))
+	for i, item := range list.Items {
+		i := i
+		item := item
+		g.Go(func() error {
+			mappedItem, err := function.Func(item)
+			if err != nil {
+				return err
+			}
+			mappedItems[i] = mappedItem
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return &types.MalList{
+		Items: mappedItems,
 	}, nil
 }
 

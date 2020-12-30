@@ -40,6 +40,7 @@ func init() {
 	register("slurp", slurp)
 	register("cons", cons)
 	register("concat", concat)
+	register("map", sketchMap)
 }
 
 func ValidateNArgs(n int, args []types.MalType) error {
