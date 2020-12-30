@@ -86,11 +86,11 @@ func rootEnvironment() (*environment.Env, error) {
 	})
 
 	// Builtin functions defined in lisp
-	if _, err := Rep("(def! not (fn (a) (if a false true)))", env); err != nil {
+	if _, err := Rep("(def not (fn (a) (if a false true)))", env); err != nil {
 		return nil, err
 	}
 
-	if _, err := Rep("(def! load-file (fn (f) (eval (read-string (+ \"(do \" (slurp f) \"\nnil)\")))))", env); err != nil {
+	if _, err := Rep("(def load-file (fn (f) (eval (read-string (+ \"(do \" (slurp f) \"\nnil)\")))))", env); err != nil {
 		return nil, err
 	}
 

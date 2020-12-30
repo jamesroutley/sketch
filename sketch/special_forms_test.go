@@ -22,7 +22,7 @@ func TestSpecialForm_Def(t *testing.T) {
 	cases := []*TestCase{
 		{
 			name:     "def adds an item to the environment",
-			input:    "(do (def! a 1) a)",
+			input:    "(do (def a 1) a)",
 			expected: "1",
 		},
 	}
@@ -46,7 +46,7 @@ func TestSpecialForm_QuasiquoteExpand(t *testing.T) {
 			name: "quasiquoteexpand expands quasiquote",
 			input: `
 (do
-	(def! a "world")
+	(def a "world")
 	(quasiquote (hello (unquote a))))`,
 			expected: `(hello "world")`,
 		},
@@ -61,7 +61,7 @@ func TestSpecialForm_Defmacro(t *testing.T) {
 			input: `
 (defmacro! nil!  (fn
 	(name)
-	(quasiquote (def! (unquote name) nil))))`,
+	(quasiquote (def (unquote name) nil))))`,
 			expected: "#<function>",
 		},
 		{
@@ -70,8 +70,8 @@ func TestSpecialForm_Defmacro(t *testing.T) {
 (do
 	(defmacro! nil!  (fn
 		(name)
-		(quasiquote (def! (unquote name) nil))))
-	(def! a 1)
+		(quasiquote (def (unquote name) nil))))
+	(def a 1)
 	(nil! a)
 	a
 )`,
@@ -87,11 +87,11 @@ func TestSpecialForm_Macroexpand(t *testing.T) {
 			name: "macroexpand expands and prints a macro, without evaluating it",
 			input: `
 (do
-	(defmacro! nil! (fn (name) (quasiquote (def! (unquote name) nil))))
+	(defmacro! nil! (fn (name) (quasiquote (def (unquote name) nil))))
 	(macroexpand (nil! a))
 )
 `,
-			expected: "(def! a nil)",
+			expected: "(def a nil)",
 		},
 	}
 	runTests(t, cases)

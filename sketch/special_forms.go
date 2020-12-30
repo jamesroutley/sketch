@@ -34,7 +34,7 @@ func evalSpecialForm(
 	switch operator.Value {
 	case "fn":
 		evaluator = evalFn
-	case "def!":
+	case "def":
 		evaluator = evalDef
 	case "quote":
 		evaluator = evalQuote
@@ -56,7 +56,7 @@ func evalSpecialForm(
 // Create a new function.
 //
 // e.g:
-// > (def! add1 (fn (a) (+ a 1)))
+// > (def add1 (fn (a) (+ a 1)))
 // #<function>
 // > (add1 2)
 // 3
@@ -112,11 +112,11 @@ func evalFn(operator *types.MalSymbol, args []types.MalType, env *environment.En
 func evalDef(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
 ) (newAST types.MalType, err error) {
 	if len(args) != 2 {
-		return nil, fmt.Errorf("def! takes 2 args")
+		return nil, fmt.Errorf("def takes 2 args")
 	}
 	key, ok := args[0].(*types.MalSymbol)
 	if !ok {
-		return nil, fmt.Errorf("def!: first arg isn't a symbol")
+		return nil, fmt.Errorf("def: first arg isn't a symbol")
 	}
 	value, err := Eval(args[1], env)
 	if err != nil {

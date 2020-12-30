@@ -61,7 +61,7 @@ func TestSpecialForm_Do(t *testing.T) {
 			name: "do evaluates all args, and returns the last",
 			input: `
 (do
-	(def! a 1)
+	(def a 1)
 	a)`,
 			expected: "1",
 		},
@@ -75,7 +75,7 @@ func TestSpecialForm_Quasiquote(t *testing.T) {
 			name: "quasiquote ",
 			input: `
 (do
-	(def! a "world")
+	(def a "world")
 	(quasiquote ("hello" (unquote a))))`,
 			expected: `("hello" "world")`,
 		},

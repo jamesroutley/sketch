@@ -11,7 +11,7 @@ import (
 // The way code is evaluated depends on its structure.
 //
 // 1. Special forms - these are language-level features, which behave
-// differently to normal functions. These include `def!` and `let*`. For
+// differently to normal functions. These include `def` and `let*`. For
 // example, certain elements in the argument list might be evaluated
 // differently (or not at all)
 // 2. Symbols: evaluated to their corresponding value in the environment `env`

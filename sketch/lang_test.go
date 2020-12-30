@@ -50,7 +50,7 @@ func TestDef(t *testing.T) {
 	cases := []*TestCase{
 		{
 			name:     "def defines a new value",
-			input:    "(do (def! a 1) a)",
+			input:    "(do (def a 1) a)",
 			expected: "1",
 		},
 	}
@@ -83,7 +83,7 @@ func TestRecursion(t *testing.T) {
 			name: "deep recursion - this will overflow if `if expression` TCO not implemented",
 			input: `
 (do
-	(def! count-to (fn (num) (if (= num 0) nil (count-to (- num 1)))))
+	(def count-to (fn (num) (if (= num 0) nil (count-to (- num 1)))))
 	(count-to 5000000)
 )`,
 			expected: "nil",
