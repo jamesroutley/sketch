@@ -1,5 +1,7 @@
 # Documentation
 
+> ⚠️ This documentation is just a collection of raw notes at the moment
+
 ## Language features
 
 - `map` is parallel by default, order of execution on the elements of the list not specified
