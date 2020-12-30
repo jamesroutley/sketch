@@ -19,91 +19,126 @@ import (
 // evaluated, and the first item (the function itself) is called with the rest
 // of the items as arguments.
 func Eval(ast types.MalType, env *environment.Env) (types.MalType, error) {
-top:
-	// First - check if ast is a list. If it isn't we can evaluate it as an
-	// atom and return
-	list, ok := ast.(*types.MalList)
-	if !ok {
-		return evalAST(ast, env)
-	}
-	if len(list.Items) == 0 {
-		return ast, nil
-	}
+	// This whlie loop enables tail call optimisation (TCO), where we mutate
+	// `ast` and `env` and jump back to the top, rather than recursively
+	// calling `Eval`. This stops a stack frame from being pushed, and lets us
+	// recurse to depths that would otherwise cause a stack overflow.
+	for {
+		// First - check if ast is a list. If it isn't we can evaluate it as an
+		// atom and return.
+		// N.B: a lot of mutation goes on in this function. We use these scoping
+		// {} parens to try and minimise cross contamination between sections
+		{
+			list, ok := ast.(*types.MalList)
+			if !ok {
+				return evalAST(ast, env)
+			}
 
-	// Ok, AST is a list. Lists can contain function calls, macros, special
-	// forms. Here we handle those cases.
-
-	// First, macros. A macro modifies Lisp source code, so we need to expand
-	// them before we continue evaluating.
-	{
-		expandedAST, err := macroExpand(ast, env)
-		if err != nil {
-			return nil, err
+			// If the list is empty - return it. Empty lists eval to themselves
+			//
+			// > ()
+			// ()
+			//
+			// (these cryptic symbols indicate that what you'd see on the REPL when
+			// evaluating an empty list)
+			if len(list.Items) == 0 {
+				return ast, nil
+			}
 		}
 
-		// Check if the ast is still a list after the macro expansion. If it
-		// isn't, we just return evalAST, like we did for non-lists above.
-		// If it is, continue.
-		switch expandedAST.(type) {
-		case *types.MalList:
-			ast = expandedAST
-			// continue
-		default:
-			return evalAST(expandedAST, env)
+		// Ok, AST is a list. Lists can contain function calls, special forms
+		// and macros. Here we handle those cases.
+
+		// First, macros. A macro modifies Lisp source code, so we need to
+		// expand them before we continue evaluating.
+		{
+			expandedAST, err := macroExpand(ast, env)
+			if err != nil {
+				return nil, err
+			}
+
+			// Check if the ast is still a list after the macro expansion. If it
+			// isn't, we just return evalAST, like we did for non-lists above.
+			// If it is, continue.
+			switch expandedAST.(type) {
+			case *types.MalList:
+				ast = expandedAST
+				// continue
+			default:
+				return evalAST(expandedAST, env)
+			}
+		}
+
+		// Process tail call optimised special forms. Some special forms call
+		// Eval. For example, an `if` expression evaluates one of the two
+		// expressions provided, depending on whether the condition is true or
+		// false. Instead of recusively calling Eval, they return a new `ast`
+		// and `env`, and we loop back to the top of this function.
+		{
+			evaluated, newAST, newEnv, err := evalTCOSpecialForm(ast, env)
+			if err != nil {
+				return nil, err
+			}
+			if evaluated {
+				// TCO
+				ast = newAST
+				env = newEnv
+				continue
+			}
+		}
+
+		// Process non tail call optimised special forms
+		{
+			evaluated, newAST, err := evalSpecialForm(ast, env)
+			if err != nil {
+				return nil, err
+			}
+			if evaluated {
+				return newAST, err
+			}
+		}
+
+		// Okay - our list has had any macros expanded, and isn't a (tail call
+		// optimised) special form. Evaluate it according to Lisp rules -
+		// evaluate all elements in the list, then call the first as a
+		// function, with the rest as arguments.
+		// Evaluating the list converts the symbol at the head of the list to
+		// a function, and evaluating the rest of the arguments 'collapses'
+		// them down - e.g. if one arg is `(+ 1 1)`, it'll eval down to 2.
+		// Evaluating the arguments first makes this Lisp 'eager' (i.e. not
+		// lazy). Not evaluating them up front would give us a lazy language,
+		// which has interesting and different properties.
+		{
+			newAST, err := evalAST(ast, env)
+			if err != nil {
+				return nil, err
+			}
+
+			list, ok := newAST.(*types.MalList)
+			if !ok {
+				return nil, fmt.Errorf("list did not evaluate to a list")
+			}
+
+			function, ok := list.Items[0].(*types.MalFunction)
+			if !ok {
+				return nil, fmt.Errorf("first item in list isn't a function")
+			}
+
+			if !function.TailCallOptimised {
+				return function.Func(list.Items[1:]...)
+			}
+
+			// Function is tail call optimised.
+			// Construct the correct environment it should be run in
+			childEnv := environment.NewChildEnv(
+				function.Env.(*environment.Env), function.Params, list.Items[1:],
+			)
+			// TCO
+			ast = function.AST
+			env = childEnv
+			continue
 		}
 	}
-
-	// Some special forms are tail call optimised. Instead of recusively
-	// calling Eval, they return a new `ast` and `env`, and we loop back to
-	// the top of this function.
-	// TODO: I think we can pass list here, rather than ast
-	if operator, args, ok := isTCOSpecialForm(ast); ok {
-		newAST, newEnv, err := evalTCOSpecialForm(operator, args, env)
-		if err != nil {
-			return nil, err
-		}
-		ast = newAST
-		env = newEnv
-		// XXX: The other option here is to wrap this function body if a while
-		// loop, and `continue` here. They've equivalent because all other
-		// branches return. Using a goto seems somewhat nicer though??
-		goto top
-	}
-
-	if operator, args, ok := isSpecialForm(ast); ok {
-		return evalSpecialForm(operator, args, env)
-	}
-
-	// Apply phase - evaluate all elements in the list, then call the first
-	// as a function, with the rest as arguments
-	evaluated, err := evalAST(list, env)
-	if err != nil {
-		return nil, err
-	}
-
-	evaluatedList, ok := evaluated.(*types.MalList)
-	if !ok {
-		return nil, fmt.Errorf("list did not evaluate to a list")
-	}
-
-	function, ok := evaluatedList.Items[0].(*types.MalFunction)
-	if !ok {
-		return nil, fmt.Errorf("first item in list isn't a function")
-	}
-
-	if !function.TailCallOptimised {
-		return function.Func(evaluatedList.Items[1:]...)
-	}
-
-	// Function is tail call optimised.
-	// Construct the correct environment it should be run in
-	childEnv := environment.NewChildEnv(
-		function.Env.(*environment.Env), function.Params, evaluatedList.Items[1:],
-	)
-
-	ast = function.AST
-	env = childEnv
-	goto top
 }
 
 // evalAST implements the evaluation rules for normal expressions. Any special

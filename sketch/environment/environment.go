@@ -26,7 +26,7 @@ func NewChildEnv(parent *Env, binds []*types.MalSymbol, exprs []types.MalType) *
 	}
 	if len(binds) != len(exprs) {
 		// TODO: return this?
-		log.Fatal("can't create env - num binds != num exprs")
+		log.Fatalf("can't create env - num binds (%d) != num exprs (%d)", len(binds), len(exprs))
 	}
 	for i := range binds {
 		env.Set(binds[i].Value, exprs[i])
