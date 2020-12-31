@@ -9,6 +9,11 @@ import (
 
 type MalType interface {
 	String() string
+	// PrettyPrint returns a 'pretty' version of the type. For non-lists, this
+	// is just the type's value. For lists, see MalList.PrettyPrint docstring.
+	// This function powers sketchfmt
+	// TODO: Because we currently don't currently read comments, they aren't
+	// preserved during pretty printing.
 	PrettyPrint(indent int) string
 }
 
@@ -30,14 +35,25 @@ func (l *MalList) String() string {
 	return fmt.Sprintf("(%s)", strings.Join(itemStrings, " "))
 }
 
+// PrettyPrint returns a 'pretty' version of the list. The rules are:
+// Check if the whole list + the indentation can fit in an 80 char line. If so,
+// return the list on a single line.
+// Else, return the list with each item printed on a separate line, in the form
+// (a
+//   b
+//   c)
+//
+// TODO: we should consider having stricter formatting for certain special
+// forms. For example, it might be nice to always print `case` statements on
+// different lines.
 func (l *MalList) PrettyPrint(indent int) string {
 	items := l.Items
 	if len(items) == 0 {
 		return l.String()
 	}
 
-	// Shorter line length. Try getting the whole form. If it's less than 80
-	// chars (including indent), print it all on one line
+	// If the whole list fits on an  80 char line (including indent), print it
+	// all on one line
 	trial := l.String()
 	if len(trial)+(indent*2) < 80 {
 		return trial
@@ -50,9 +66,6 @@ func (l *MalList) PrettyPrint(indent int) string {
 	for _, arg := range args {
 		fmt.Fprintf(&b, "\n")
 		fmt.Fprintf(&b, "%s%s", getIndent(indent+1), arg.PrettyPrint(indent+1))
-		// if i != len(args)-1 {
-		// 	fmt.Fprintf(&b, "\n")
-		// }
 	}
 	fmt.Fprintf(&b, ")")
 	return b.String()

@@ -265,5 +265,85 @@ func sketchMap(args ...types.MalType) (types.MalType, error) {
 	}, nil
 }
 
+func filter(args ...types.MalType) (types.MalType, error) {
+	function, ok := args[0].(*types.MalFunction)
+	if !ok {
+		return nil, fmt.Errorf("first arg to map must be a function")
+	}
+	list, ok := args[1].(*types.MalList)
+	if !ok {
+		return nil, fmt.Errorf("second arg to map must be a list")
+	}
+
+	// Short circuit
+	if len(list.Items) == 0 {
+		return list, nil
+	}
+
+	g := new(errgroup.Group)
+	filteredItems := make([]types.MalType, 0, len(list.Items))
+	for _, item := range list.Items {
+		item := item
+		g.Go(func() error {
+			passed, err := function.Func(item)
+			if err != nil {
+				return err
+			}
+			if isTruthy(passed) {
+				filteredItems = append(filteredItems, item)
+			}
+
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return &types.MalList{
+		Items: filteredItems,
+	}, nil
+}
+
+func first(args ...types.MalType) (types.MalType, error) {
+	switch arg := args[0].(type) {
+	case *types.MalNil:
+		return arg, nil
+	case *types.MalList:
+		if len(arg.Items) == 0 {
+			return &types.MalNil{}, nil
+		}
+		return arg.Items[0], nil
+	default:
+		return nil, fmt.Errorf("first arg to first must be a list")
+	}
+}
+
+func rest(args ...types.MalType) (types.MalType, error) {
+	switch arg := args[0].(type) {
+	case *types.MalNil:
+		return &types.MalList{}, nil
+	case *types.MalList:
+		if len(arg.Items) == 0 {
+			return &types.MalList{}, nil
+		}
+		return &types.MalList{Items: arg.Items[1:]}, nil
+	default:
+		return nil, fmt.Errorf("first arg to first must be a list")
+	}
+}
+
 // func list(args ...types.MalType) (types.MalType, error) {
 // }
+
+// isTruthy returns a type's truthiness. Currently: it's falsy if the type is
+// `nil` or the boolean 'false'. All other values are truthy.
+func isTruthy(t types.MalType) bool {
+	switch token := t.(type) {
+	case *types.MalNil:
+		return false
+	case *types.MalBoolean:
+		return token.Value
+	}
+	return true
+}

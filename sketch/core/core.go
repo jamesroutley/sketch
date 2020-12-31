@@ -41,6 +41,9 @@ func init() {
 	register("cons", cons)
 	register("concat", concat)
 	register("map", sketchMap)
+	register("filter", filter)
+	register("first", first)
+	register("rest", rest)
 }
 
 func ValidateNArgs(n int, args []types.MalType) error {
