@@ -20,7 +20,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
@@ -31,6 +30,8 @@ import (
 )
 
 var cfgFile string
+
+var rewrite bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -58,16 +59,16 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		prettyPrinted := printer.PrettyPrint(ast)
+		formatted := printer.PrettyPrintTopLevelDo(ast)
 
-		// Remove the surrounding (do ...) we added above
-		// TODO: this is grossly inefficient
-		prettyPrinted = strings.TrimPrefix(prettyPrinted, "(do\n")
-		prettyPrinted = strings.TrimSuffix(prettyPrinted, ")")
-		// All lines are indented by two spaces - remove these
-		for _, line := range strings.Split(prettyPrinted, "\n") {
-			fmt.Println(strings.TrimPrefix(line, "  "))
+		if rewrite {
+			if err := ioutil.WriteFile(filename, []byte(formatted), 0777); err != nil {
+				log.Fatal(err)
+			}
+			return
 		}
+
+		fmt.Println(formatted)
 	},
 }
 
@@ -91,7 +92,7 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolVarP(&rewrite, "rewrite", "r", false, "Rewrite the file, instead of printing to stdout")
 }
 
 // initConfig reads in config file and ENV variables if set.
