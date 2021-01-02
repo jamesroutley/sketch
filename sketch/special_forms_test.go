@@ -35,6 +35,11 @@ func TestSpecialForm_FnVariadicArgs(t *testing.T) {
 			input:    "((fn (& y) y))",
 			expected: "()",
 		},
+		{
+			name:     "you can mix named and variadic args",
+			input:    "((fn (a b & y) (list a b y)) 1 2 3 4)",
+			expected: "(1 2 (3 4))",
+		},
 	}
 	runTests(t, cases)
 }
