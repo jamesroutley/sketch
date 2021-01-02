@@ -18,6 +18,27 @@ func TestSpecialForm_Fn(t *testing.T) {
 	runTests(t, cases)
 }
 
+func TestSpecialForm_FnVariadicArgs(t *testing.T) {
+	cases := []*TestCase{
+		{
+			name:     "& sumbol bundles any provided args into a list",
+			input:    "((fn (& y) y) 1)",
+			expected: "(1)",
+		},
+		{
+			name:     "& sumbol bundles any provided args into a list (2 args)",
+			input:    "((fn (& y) y) 1 2)",
+			expected: "(1 2)",
+		},
+		{
+			name:     "& sumbol bundles any provided args into a list (0 args)",
+			input:    "((fn (& y) y))",
+			expected: "()",
+		},
+	}
+	runTests(t, cases)
+}
+
 func TestSpecialForm_Def(t *testing.T) {
 	cases := []*TestCase{
 		{

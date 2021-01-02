@@ -94,9 +94,12 @@ func evalFn(operator *types.MalSymbol, args []types.MalType, env *environment.En
 		// which binds the Lisp function's arguments to the parameters
 		// defined when the function was defined.
 		Func: func(exprs ...types.MalType) (types.MalType, error) {
-			childEnv := environment.NewChildEnv(
+			childEnv, err := environment.NewChildEnv(
 				env, binds, exprs,
 			)
+			if err != nil {
+				return nil, err
+			}
 			return Eval(args[1], childEnv)
 		},
 	}, nil

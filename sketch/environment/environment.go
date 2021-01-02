@@ -2,7 +2,6 @@ package environment
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/jamesroutley/sketch/sketch/types"
 )
@@ -19,19 +18,50 @@ func NewEnv() *Env {
 	}
 }
 
-func NewChildEnv(parent *Env, binds []*types.MalSymbol, exprs []types.MalType) *Env {
+// NewChildEnv creates a new environment with `parent` as its outer
+// environment. It also takes a a list of arguments, which should be bound to
+// the symbols in `parameters` one by one.
+func NewChildEnv(parent *Env, parameters []*types.MalSymbol, arguments []types.MalType) (*Env, error) {
 	env := &Env{
 		Outer: parent,
 		Data:  map[string]types.MalType{},
 	}
-	if len(binds) != len(exprs) {
-		// TODO: return this?
-		log.Fatalf("can't create env - num binds (%d) != num exprs (%d)", len(binds), len(exprs))
+
+	variadicArguments := false
+	for _, param := range parameters {
+		if param.Value == "&" {
+			variadicArguments = true
+			break
+		}
 	}
-	for i := range binds {
-		env.Set(binds[i].Value, exprs[i])
+	if !variadicArguments && (len(parameters) != len(arguments)) {
+		return nil, fmt.Errorf("can't create env - num parameters (%d) != num arguments (%d)", len(parameters), len(arguments))
 	}
-	return env
+
+	for i, symbol := range parameters {
+		// Variadic arguments. Bind the remaining arguments to the symbol after
+		// the &.
+		if symbol.Value == "&" {
+			// Validate that only one parameter is specified after the &
+			collectorSymbols := parameters[i+1:]
+			switch len(collectorSymbols) {
+			case 1:
+				// continue
+			case 0:
+				return nil, fmt.Errorf("variadic arguments: no collector specified")
+			default:
+				return nil, fmt.Errorf("variadic arguments: you can only specify one collector argument")
+			}
+
+			collectorSymbol := collectorSymbols[0]
+			env.Set(collectorSymbol.Value, &types.MalList{
+				Items: arguments[i:],
+			})
+			return env, nil
+		}
+		env.Set(symbol.Value, arguments[i])
+	}
+	return env, nil
 }
 
 func (e *Env) Set(key string, value types.MalType) {

@@ -121,7 +121,7 @@ func Eval(ast types.MalType, env *environment.Env) (types.MalType, error) {
 
 			function, ok := list.Items[0].(*types.MalFunction)
 			if !ok {
-				return nil, fmt.Errorf("first item in list isn't a function")
+				return nil, fmt.Errorf("Error evaluating list %s. I expected the first item in the list to be a function, but it's a %s.", list, list.Items[0].Type())
 			}
 
 			if !function.TailCallOptimised {
@@ -130,9 +130,12 @@ func Eval(ast types.MalType, env *environment.Env) (types.MalType, error) {
 
 			// Function is tail call optimised.
 			// Construct the correct environment it should be run in
-			childEnv := environment.NewChildEnv(
+			childEnv, err := environment.NewChildEnv(
 				function.Env.(*environment.Env), function.Params, list.Items[1:],
 			)
+			if err != nil {
+				return nil, err
+			}
 			// TCO
 			ast = function.AST
 			env = childEnv

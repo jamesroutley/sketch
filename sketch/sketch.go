@@ -90,6 +90,7 @@ func rootEnvironment() (*environment.Env, error) {
 		return nil, err
 	}
 
+	// TODO: move to stdlib. Also not sure if it needs to call eval
 	if _, err := Rep("(def load-file (fn (f) (eval (read-string (+ \"(do \" (slurp f) \"\nnil)\")))))", env); err != nil {
 		return nil, err
 	}
@@ -107,7 +108,7 @@ func rootEnvironment() (*environment.Env, error) {
 
 	for _, filename := range stdlibFiles {
 		if _, err := Rep(fmt.Sprintf(`(load-file "%s")`, filename), env); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error loading file %s: %w", filename, err)
 		}
 	}
 

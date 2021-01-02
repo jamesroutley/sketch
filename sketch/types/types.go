@@ -15,6 +15,8 @@ type MalType interface {
 	// TODO: Because we currently don't currently read comments, they aren't
 	// preserved during pretty printing.
 	PrettyPrint(indent int) string
+	// Returns a human readable name for the type
+	Type() string
 }
 
 type EnvType interface {
@@ -33,6 +35,10 @@ func (l *MalList) String() string {
 		itemStrings[i] = item.String()
 	}
 	return fmt.Sprintf("(%s)", strings.Join(itemStrings, " "))
+}
+
+func (l *MalList) Type() string {
+	return "list"
 }
 
 // PrettyPrint returns a 'pretty' version of the list. The rules are:
@@ -105,6 +111,10 @@ func (i *MalInt) String() string {
 	return strconv.Itoa(i.Value)
 }
 
+func (i *MalInt) Type() string {
+	return "int"
+}
+
 func (i *MalInt) PrettyPrint(indent int) string {
 	return strconv.Itoa(i.Value)
 }
@@ -115,6 +125,10 @@ type MalSymbol struct {
 
 func (s *MalSymbol) String() string {
 	return s.Value
+}
+
+func (s *MalSymbol) Type() string {
+	return "symbol"
 }
 
 func (s *MalSymbol) PrettyPrint(indent int) string {
@@ -134,6 +148,10 @@ func (f *MalFunction) String() string {
 	return "#<function>"
 }
 
+func (f *MalFunction) Type() string {
+	return "function"
+}
+
 func (f *MalFunction) PrettyPrint(indent int) string {
 	return f.String()
 }
@@ -149,6 +167,10 @@ func (b *MalBoolean) String() string {
 	return "false"
 }
 
+func (b *MalBoolean) Type() string {
+	return "boolean"
+}
+
 func (b *MalBoolean) PrettyPrint(indent int) string {
 	return b.String()
 }
@@ -156,6 +178,10 @@ func (b *MalBoolean) PrettyPrint(indent int) string {
 type MalNil struct{}
 
 func (n *MalNil) String() string {
+	return "nil"
+}
+
+func (n *MalNil) Type() string {
 	return "nil"
 }
 
@@ -169,6 +195,10 @@ type MalString struct {
 
 func (s *MalString) String() string {
 	return fmt.Sprintf(`"%s"`, s.Value)
+}
+
+func (s *MalString) Type() string {
+	return "string"
 }
 
 func (s *MalString) PrettyPrint(indent int) string {
