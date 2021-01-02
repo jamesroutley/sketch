@@ -44,6 +44,8 @@ func init() {
 	register("filter", filter)
 	register("first", first)
 	register("rest", rest)
+	register("and", and)
+	register("or", or)
 }
 
 func ValidateNArgs(n int, args []types.MalType) error {

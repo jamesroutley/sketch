@@ -333,6 +333,38 @@ func rest(args ...types.MalType) (types.MalType, error) {
 	}
 }
 
+func and(args ...types.MalType) (types.MalType, error) {
+	if len(args) == 0 {
+		return nil, fmt.Errorf("and takes at least one arg, got %d", len(args))
+	}
+	result := true
+	for _, arg := range args {
+		if !isTruthy(arg) {
+			result = false
+			break
+		}
+	}
+	return &types.MalBoolean{
+		Value: result,
+	}, nil
+}
+
+func or(args ...types.MalType) (types.MalType, error) {
+	if len(args) == 0 {
+		return nil, fmt.Errorf("or takes at least one arg, got %d", len(args))
+	}
+	result := false
+	for _, arg := range args {
+		if isTruthy(arg) {
+			result = true
+			break
+		}
+	}
+	return &types.MalBoolean{
+		Value: result,
+	}, nil
+}
+
 // func list(args ...types.MalType) (types.MalType, error) {
 // }
 
