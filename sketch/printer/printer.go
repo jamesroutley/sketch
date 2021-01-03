@@ -8,11 +8,11 @@ import (
 	"github.com/jamesroutley/sketch/sketch/types"
 )
 
-func PrStr(t types.MalType) string {
+func PrStr(t types.SketchType) string {
 	return t.String()
 }
 
-func PrettyPrint(ast types.MalType) string {
+func PrettyPrint(ast types.SketchType) string {
 	return ast.PrettyPrint(0)
 }
 
@@ -20,8 +20,8 @@ func PrettyPrint(ast types.MalType) string {
 // expression. When printing that (unevaluated) program AST, we don't want to
 // include the (do) expression. This prints the ast, removing a top level `do`
 // if there is one
-func PrettyPrintTopLevelDo(ast types.MalType) string {
-	list, ok := ast.(*types.MalList)
+func PrettyPrintTopLevelDo(ast types.SketchType) string {
+	list, ok := ast.(*types.SketchList)
 	if !ok {
 		return PrettyPrint(ast)
 	}
@@ -30,7 +30,7 @@ func PrettyPrintTopLevelDo(ast types.MalType) string {
 		return PrettyPrint(ast)
 	}
 
-	symbol, ok := list.Items[0].(*types.MalSymbol)
+	symbol, ok := list.Items[0].(*types.SketchSymbol)
 	if !ok {
 		return PrettyPrint(ast)
 	}

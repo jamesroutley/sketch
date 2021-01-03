@@ -8,23 +8,23 @@ import (
 
 type Env struct {
 	Outer *Env
-	Data  map[string]types.MalType
+	Data  map[string]types.SketchType
 }
 
 func NewEnv() *Env {
 	return &Env{
 		Outer: nil,
-		Data:  map[string]types.MalType{},
+		Data:  map[string]types.SketchType{},
 	}
 }
 
 // NewChildEnv creates a new environment with `parent` as its outer
 // environment. It also takes a a list of arguments, which should be bound to
 // the symbols in `parameters` one by one.
-func NewChildEnv(parent *Env, parameters []*types.MalSymbol, arguments []types.MalType) (*Env, error) {
+func NewChildEnv(parent *Env, parameters []*types.SketchSymbol, arguments []types.SketchType) (*Env, error) {
 	env := &Env{
 		Outer: parent,
-		Data:  map[string]types.MalType{},
+		Data:  map[string]types.SketchType{},
 	}
 
 	variadicArguments := false
@@ -54,7 +54,7 @@ func NewChildEnv(parent *Env, parameters []*types.MalSymbol, arguments []types.M
 			}
 
 			collectorSymbol := collectorSymbols[0]
-			env.Set(collectorSymbol.Value, &types.MalList{
+			env.Set(collectorSymbol.Value, &types.SketchList{
 				Items: arguments[i:],
 			})
 			return env, nil
@@ -64,7 +64,7 @@ func NewChildEnv(parent *Env, parameters []*types.MalSymbol, arguments []types.M
 	return env, nil
 }
 
-func (e *Env) Set(key string, value types.MalType) {
+func (e *Env) Set(key string, value types.SketchType) {
 	e.Data[key] = value
 }
 
@@ -79,7 +79,7 @@ func (e *Env) Find(key string) (types.EnvType, error) {
 	return e.Outer.Find(key)
 }
 
-func (e *Env) Get(key string) (types.MalType, error) {
+func (e *Env) Get(key string) (types.SketchType, error) {
 	env, err := e.Find(key)
 	if err != nil {
 		return nil, err
@@ -90,6 +90,6 @@ func (e *Env) Get(key string) (types.MalType, error) {
 func (e *Env) ChildEnv() *Env {
 	return &Env{
 		Outer: e,
-		Data:  map[string]types.MalType{},
+		Data:  map[string]types.SketchType{},
 	}
 }

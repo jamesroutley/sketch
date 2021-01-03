@@ -18,7 +18,7 @@ import (
 // 3. Lists: by default, they're treated as function calls - each item is
 // evaluated, and the first item (the function itself) is called with the rest
 // of the items as arguments.
-func Eval(ast types.MalType, env *environment.Env) (types.MalType, error) {
+func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) {
 	// This whlie loop enables tail call optimisation (TCO), where we mutate
 	// `ast` and `env` and jump back to the top, rather than recursively
 	// calling `Eval`. This stops a stack frame from being pushed, and lets us
@@ -29,7 +29,7 @@ func Eval(ast types.MalType, env *environment.Env) (types.MalType, error) {
 		// N.B: a lot of mutation goes on in this function. We use these scoping
 		// {} parens to try and minimise cross contamination between sections
 		{
-			list, ok := ast.(*types.MalList)
+			list, ok := ast.(*types.SketchList)
 			if !ok {
 				return evalAST(ast, env)
 			}
@@ -61,7 +61,7 @@ func Eval(ast types.MalType, env *environment.Env) (types.MalType, error) {
 			// isn't, we just return evalAST, like we did for non-lists above.
 			// If it is, continue.
 			switch expandedAST.(type) {
-			case *types.MalList:
+			case *types.SketchList:
 				ast = expandedAST
 				// continue
 			default:
@@ -114,12 +114,12 @@ func Eval(ast types.MalType, env *environment.Env) (types.MalType, error) {
 				return nil, err
 			}
 
-			list, ok := newAST.(*types.MalList)
+			list, ok := newAST.(*types.SketchList)
 			if !ok {
 				return nil, fmt.Errorf("list did not evaluate to a list")
 			}
 
-			function, ok := list.Items[0].(*types.MalFunction)
+			function, ok := list.Items[0].(*types.SketchFunction)
 			if !ok {
 				return nil, fmt.Errorf("Error evaluating list %s. I expected the first item in the list to be a function, but it's a %s.", list, list.Items[0].Type())
 			}
@@ -147,16 +147,16 @@ func Eval(ast types.MalType, env *environment.Env) (types.MalType, error) {
 // evalAST implements the evaluation rules for normal expressions. Any special
 // cases are handed above us, in the Eval function. This function is an
 // implementation detail of Eval, and shoulnd't be called apart from by it.
-func evalAST(ast types.MalType, env *environment.Env) (types.MalType, error) {
+func evalAST(ast types.SketchType, env *environment.Env) (types.SketchType, error) {
 	switch tok := ast.(type) {
-	case *types.MalSymbol:
+	case *types.SketchSymbol:
 		value, err := env.Get(tok.Value)
 		if err != nil {
 			return nil, err
 		}
 		return value, nil
-	case *types.MalList:
-		items := make([]types.MalType, len(tok.Items))
+	case *types.SketchList:
+		items := make([]types.SketchType, len(tok.Items))
 		for i, item := range tok.Items {
 			evaluated, err := Eval(item, env)
 			if err != nil {
@@ -164,7 +164,7 @@ func evalAST(ast types.MalType, env *environment.Env) (types.MalType, error) {
 			}
 			items[i] = evaluated
 		}
-		return &types.MalList{
+		return &types.SketchList{
 			Items: items,
 		}, nil
 	}
@@ -173,18 +173,18 @@ func evalAST(ast types.MalType, env *environment.Env) (types.MalType, error) {
 
 // isTruthy returns a type's truthiness. Currently: it's falsy if the type is
 // `nil` or the boolean 'false'. All other values are truthy.
-func isTruthy(t types.MalType) bool {
+func isTruthy(t types.SketchType) bool {
 	switch token := t.(type) {
-	case *types.MalNil:
+	case *types.SketchNil:
 		return false
-	case *types.MalBoolean:
+	case *types.SketchBoolean:
 		return token.Value
 	}
 	return true
 }
 
-func quasiquote(ast types.MalType) (types.MalType, error) {
-	list, ok := ast.(*types.MalList)
+func quasiquote(ast types.SketchType) (types.SketchType, error) {
+	list, ok := ast.(*types.SketchList)
 	if !ok {
 		// `ast` isn't a list, which means it can't be an unquoted form. Return
 		// its quoted form. Here, we quote it regardless of its type.
@@ -193,9 +193,9 @@ func quasiquote(ast types.MalType) (types.MalType, error) {
 		// evaluate to themselves, so there's no difference caused by quoting
 		// them. However, there's also no harm harm in doing so.
 		// This return statements returns the AST version of (quote <ast>)
-		return &types.MalList{
-			Items: []types.MalType{
-				&types.MalSymbol{Value: "quote"},
+		return &types.SketchList{
+			Items: []types.SketchType{
+				&types.SketchSymbol{Value: "quote"},
 				ast,
 			},
 		}, nil
@@ -211,20 +211,20 @@ func quasiquote(ast types.MalType) (types.MalType, error) {
 
 	// If the first item in the list is the function `unquote`, return the
 	// first argument without quoting it.
-	if symbol, ok := items[0].(*types.MalSymbol); ok && symbol.Value == "unquote" {
+	if symbol, ok := items[0].(*types.SketchSymbol); ok && symbol.Value == "unquote" {
 		return list.Items[1], nil
 	}
 
 	// Okay - ast is a list, than hasn't been unquoted
-	quasiquoted := &types.MalList{}
+	quasiquoted := &types.SketchList{}
 
 	for i := len(items) - 1; i >= 0; i-- {
 		element := items[i]
 
 		if args, ok := isSpliceUnquoteForm(element); ok {
-			quasiquoted = &types.MalList{
-				Items: []types.MalType{
-					&types.MalSymbol{Value: "concat"},
+			quasiquoted = &types.SketchList{
+				Items: []types.SketchType{
+					&types.SketchSymbol{Value: "concat"},
 					args[0],
 					quasiquoted,
 				},
@@ -237,9 +237,9 @@ func quasiquote(ast types.MalType) (types.MalType, error) {
 			return nil, err
 		}
 
-		quasiquoted = &types.MalList{
-			Items: []types.MalType{
-				&types.MalSymbol{Value: "cons"},
+		quasiquoted = &types.SketchList{
+			Items: []types.SketchType{
+				&types.SketchSymbol{Value: "cons"},
 				quasiqutoedElement,
 				quasiquoted,
 			},
@@ -249,8 +249,8 @@ func quasiquote(ast types.MalType) (types.MalType, error) {
 	return quasiquoted, nil
 }
 
-func isSpliceUnquoteForm(ast types.MalType) (spliceUnquoteArgs []types.MalType, ok bool) {
-	list, ok := ast.(*types.MalList)
+func isSpliceUnquoteForm(ast types.SketchType) (spliceUnquoteArgs []types.SketchType, ok bool) {
+	list, ok := ast.(*types.SketchList)
 	if !ok {
 		return nil, false
 	}
@@ -258,7 +258,7 @@ func isSpliceUnquoteForm(ast types.MalType) (spliceUnquoteArgs []types.MalType, 
 	if len(items) == 0 {
 		return nil, false
 	}
-	symbol, ok := items[0].(*types.MalSymbol)
+	symbol, ok := items[0].(*types.SketchSymbol)
 	if !ok {
 		return nil, false
 	}
@@ -268,8 +268,8 @@ func isSpliceUnquoteForm(ast types.MalType) (spliceUnquoteArgs []types.MalType, 
 	return nil, false
 }
 
-func isMacroCall(ast types.MalType, env *environment.Env) bool {
-	list, ok := ast.(*types.MalList)
+func isMacroCall(ast types.SketchType, env *environment.Env) bool {
+	list, ok := ast.(*types.SketchList)
 	if !ok {
 		return false
 	}
@@ -277,7 +277,7 @@ func isMacroCall(ast types.MalType, env *environment.Env) bool {
 	if len(items) == 0 {
 		return false
 	}
-	symbol, ok := items[0].(*types.MalSymbol)
+	symbol, ok := items[0].(*types.SketchSymbol)
 	if !ok {
 		return false
 	}
@@ -288,14 +288,14 @@ func isMacroCall(ast types.MalType, env *environment.Env) bool {
 		// environment
 		return false
 	}
-	function, ok := value.(*types.MalFunction)
+	function, ok := value.(*types.SketchFunction)
 	if !ok {
 		return false
 	}
 	return function.IsMacro
 }
 
-func macroExpand(ast types.MalType, env *environment.Env) (types.MalType, error) {
+func macroExpand(ast types.SketchType, env *environment.Env) (types.SketchType, error) {
 	for isMacroCall(ast, env) {
 		// TODO: isMacroCall could return the macro function, which would save
 		// the casting below
@@ -303,16 +303,16 @@ func macroExpand(ast types.MalType, env *environment.Env) (types.MalType, error)
 		// Don't check the ok value here because we've validated that ast is a
 		// list in isMacroCall. If it's not, something very strange has
 		// happened
-		list := ast.(*types.MalList)
+		list := ast.(*types.SketchList)
 		// Again, we've already checked this - skip ok checking
-		macroName := list.Items[0].(*types.MalSymbol)
+		macroName := list.Items[0].(*types.SketchSymbol)
 
 		macroNameValue, err := env.Get(macroName.Value)
 		if err != nil {
 			// Shouldn't happen - we've already validated this above
 			return nil, err
 		}
-		macroFunc := macroNameValue.(*types.MalFunction)
+		macroFunc := macroNameValue.(*types.SketchFunction)
 
 		newAst, err := macroFunc.Func(list.Items[1:]...)
 		if err != nil {

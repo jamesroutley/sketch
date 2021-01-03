@@ -36,13 +36,13 @@ func (r *Reader) Next() (string, error) {
 	return current, nil
 }
 
-func ReadStr(s string) (types.MalType, error) {
+func ReadStr(s string) (types.SketchType, error) {
 	tokens := Tokenize(s)
 	reader := NewReader(tokens)
 	return ReadForm(reader)
 }
 
-func ReadForm(reader *Reader) (types.MalType, error) {
+func ReadForm(reader *Reader) (types.SketchType, error) {
 	token, err := reader.Peek()
 	if err != nil {
 		return nil, err
@@ -71,8 +71,8 @@ func ReadForm(reader *Reader) (types.MalType, error) {
 	}
 }
 
-func ReadList(reader *Reader) (types.MalType, error) {
-	var items []types.MalType
+func ReadList(reader *Reader) (types.SketchType, error) {
+	var items []types.SketchType
 	for {
 		// TODO: error case when we hit file without closing bracket
 		tok, err := reader.Peek()
@@ -85,7 +85,7 @@ func ReadList(reader *Reader) (types.MalType, error) {
 			if err != nil {
 				return nil, err
 			}
-			return &types.MalList{
+			return &types.SketchList{
 				Items: items,
 			}, nil
 		}
@@ -97,27 +97,27 @@ func ReadList(reader *Reader) (types.MalType, error) {
 	}
 }
 
-func ReadAtom(reader *Reader) (types.MalType, error) {
+func ReadAtom(reader *Reader) (types.SketchType, error) {
 	token, err := reader.Next()
 	if err != nil {
 		return nil, err
 	}
 
 	if num, err := strconv.Atoi(token); err == nil {
-		return &types.MalInt{
+		return &types.SketchInt{
 			Value: num,
 		}, nil
 	}
 
 	if token == "true" {
-		return &types.MalBoolean{Value: true}, nil
+		return &types.SketchBoolean{Value: true}, nil
 	}
 	if token == "false" {
-		return &types.MalBoolean{Value: false}, nil
+		return &types.SketchBoolean{Value: false}, nil
 	}
 
 	if token == "nil" {
-		return &types.MalNil{}, nil
+		return &types.SketchNil{}, nil
 	}
 
 	if strings.HasPrefix(token, `"`) {
@@ -125,40 +125,40 @@ func ReadAtom(reader *Reader) (types.MalType, error) {
 			return nil, fmt.Errorf("unclosed string")
 		}
 
-		return &types.MalString{
+		return &types.SketchString{
 			Value: strings.Trim(token, `"`),
 		}, nil
 	}
 
-	return &types.MalSymbol{
+	return &types.SketchSymbol{
 		Value: token,
 	}, nil
 }
 
-func DebugType(m types.MalType) {
+func DebugType(m types.SketchType) {
 	fmt.Println(debugType(m, 0))
 }
 
-func debugType(m types.MalType, indent int) string {
+func debugType(m types.SketchType, indent int) string {
 	switch tok := m.(type) {
-	case *types.MalList:
+	case *types.SketchList:
 		itemStrings := make([]string, len(tok.Items))
 		for i, item := range tok.Items {
 			itemStrings[i] = debugType(item, 0)
 		}
 		return fmt.Sprintf("(%s)", strings.Join(itemStrings, " "))
-	case *types.MalInt:
+	case *types.SketchInt:
 		return fmt.Sprintf("int:%d ", tok.Value)
-	case *types.MalSymbol:
+	case *types.SketchSymbol:
 		return fmt.Sprintf("symbol:`%s` ", tok.Value)
-	case *types.MalFunction:
+	case *types.SketchFunction:
 		return "#<function>"
-	case *types.MalBoolean:
+	case *types.SketchBoolean:
 		if tok.Value {
 			return "boolean:true"
 		}
 		return "boolean:false"
-	case *types.MalNil:
+	case *types.SketchNil:
 		return "nil"
 	default:
 		return tok.String()

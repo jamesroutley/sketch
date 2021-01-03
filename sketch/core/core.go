@@ -7,16 +7,16 @@ import (
 )
 
 type NamespaceItem struct {
-	Symbol *types.MalSymbol
-	Func   *types.MalFunction
+	Symbol *types.SketchSymbol
+	Func   *types.SketchFunction
 }
 
 var Namespace []*NamespaceItem
 
-func register(symbol string, f func(...types.MalType) (types.MalType, error)) {
+func register(symbol string, f func(...types.SketchType) (types.SketchType, error)) {
 	item := &NamespaceItem{
-		Symbol: &types.MalSymbol{Value: symbol},
-		Func:   &types.MalFunction{Func: f},
+		Symbol: &types.SketchSymbol{Value: symbol},
+		Func:   &types.SketchFunction{Func: f},
 	}
 	Namespace = append(Namespace, item)
 }
@@ -49,17 +49,17 @@ func init() {
 	register("or", or)
 }
 
-func ValidateNArgs(n int, args []types.MalType) error {
+func ValidateNArgs(n int, args []types.SketchType) error {
 	if actual := len(args); actual != n {
 		return fmt.Errorf("function takes %d args, got %d", n, actual)
 	}
 	return nil
 }
 
-func ArgsToMalInt(args []types.MalType) ([]*types.MalInt, error) {
-	numbers := make([]*types.MalInt, len(args))
+func ArgsToSketchInt(args []types.SketchType) ([]*types.SketchInt, error) {
+	numbers := make([]*types.SketchInt, len(args))
 	for i, arg := range args {
-		number, ok := arg.(*types.MalInt)
+		number, ok := arg.(*types.SketchInt)
 		if !ok {
 			return nil, fmt.Errorf("could not cast type to int")
 		}

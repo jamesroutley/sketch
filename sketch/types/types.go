@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-type MalType interface {
+type SketchType interface {
 	String() string
 	// PrettyPrint returns a 'pretty' version of the type. For non-lists, this
-	// is just the type's value. For lists, see MalList.PrettyPrint docstring.
+	// is just the type's value. For lists, see SketchList.PrettyPrint docstring.
 	// This function powers sketchfmt
 	// TODO: Because we currently don't currently read comments, they aren't
 	// preserved during pretty printing.
@@ -20,16 +20,16 @@ type MalType interface {
 }
 
 type EnvType interface {
-	Set(string, MalType)
-	Get(string) (MalType, error)
+	Set(string, SketchType)
+	Get(string) (SketchType, error)
 	Find(string) (EnvType, error)
 }
 
-type MalList struct {
-	Items []MalType
+type SketchList struct {
+	Items []SketchType
 }
 
-func (l *MalList) String() string {
+func (l *SketchList) String() string {
 	itemStrings := make([]string, len(l.Items))
 	for i, item := range l.Items {
 		itemStrings[i] = item.String()
@@ -37,7 +37,7 @@ func (l *MalList) String() string {
 	return fmt.Sprintf("(%s)", strings.Join(itemStrings, " "))
 }
 
-func (l *MalList) Type() string {
+func (l *SketchList) Type() string {
 	return "list"
 }
 
@@ -52,7 +52,7 @@ func (l *MalList) Type() string {
 // TODO: we should consider having stricter formatting for certain special
 // forms. For example, it might be nice to always print `case` statements on
 // different lines.
-func (l *MalList) PrettyPrint(indent int) string {
+func (l *SketchList) PrettyPrint(indent int) string {
 	items := l.Items
 	if len(items) == 0 {
 		return l.String()
@@ -76,7 +76,7 @@ func (l *MalList) PrettyPrint(indent int) string {
 	fmt.Fprintf(&b, ")")
 	return b.String()
 
-	// operator, ok := items[0].(*MalSymbol)
+	// operator, ok := items[0].(*SketchSymbol)
 	// if !ok {
 	// 	return l.String()
 	// }
@@ -103,105 +103,105 @@ func (l *MalList) PrettyPrint(indent int) string {
 	// return l.String()
 }
 
-type MalInt struct {
+type SketchInt struct {
 	Value int
 }
 
-func (i *MalInt) String() string {
+func (i *SketchInt) String() string {
 	return strconv.Itoa(i.Value)
 }
 
-func (i *MalInt) Type() string {
+func (i *SketchInt) Type() string {
 	return "int"
 }
 
-func (i *MalInt) PrettyPrint(indent int) string {
+func (i *SketchInt) PrettyPrint(indent int) string {
 	return strconv.Itoa(i.Value)
 }
 
-type MalSymbol struct {
+type SketchSymbol struct {
 	Value string
 }
 
-func (s *MalSymbol) String() string {
+func (s *SketchSymbol) String() string {
 	return s.Value
 }
 
-func (s *MalSymbol) Type() string {
+func (s *SketchSymbol) Type() string {
 	return "symbol"
 }
 
-func (s *MalSymbol) PrettyPrint(indent int) string {
+func (s *SketchSymbol) PrettyPrint(indent int) string {
 	return s.String()
 }
 
-type MalFunction struct {
-	Func              func(args ...MalType) (MalType, error)
+type SketchFunction struct {
+	Func              func(args ...SketchType) (SketchType, error)
 	TailCallOptimised bool
-	AST               MalType
-	Params            []*MalSymbol
+	AST               SketchType
+	Params            []*SketchSymbol
 	Env               EnvType
 	IsMacro           bool
 }
 
-func (f *MalFunction) String() string {
+func (f *SketchFunction) String() string {
 	return "#<function>"
 }
 
-func (f *MalFunction) Type() string {
+func (f *SketchFunction) Type() string {
 	return "function"
 }
 
-func (f *MalFunction) PrettyPrint(indent int) string {
+func (f *SketchFunction) PrettyPrint(indent int) string {
 	return f.String()
 }
 
-type MalBoolean struct {
+type SketchBoolean struct {
 	Value bool
 }
 
-func (b *MalBoolean) String() string {
+func (b *SketchBoolean) String() string {
 	if b.Value {
 		return "true"
 	}
 	return "false"
 }
 
-func (b *MalBoolean) Type() string {
+func (b *SketchBoolean) Type() string {
 	return "boolean"
 }
 
-func (b *MalBoolean) PrettyPrint(indent int) string {
+func (b *SketchBoolean) PrettyPrint(indent int) string {
 	return b.String()
 }
 
-type MalNil struct{}
+type SketchNil struct{}
 
-func (n *MalNil) String() string {
+func (n *SketchNil) String() string {
 	return "nil"
 }
 
-func (n *MalNil) Type() string {
+func (n *SketchNil) Type() string {
 	return "nil"
 }
 
-func (n *MalNil) PrettyPrint(indent int) string {
+func (n *SketchNil) PrettyPrint(indent int) string {
 	return n.String()
 }
 
-type MalString struct {
+type SketchString struct {
 	Value string
 }
 
-func (s *MalString) String() string {
+func (s *SketchString) String() string {
 	return fmt.Sprintf(`"%s"`, s.Value)
 }
 
-func (s *MalString) Type() string {
+func (s *SketchString) Type() string {
 	return "string"
 }
 
-func (s *MalString) PrettyPrint(indent int) string {
+func (s *SketchString) PrettyPrint(indent int) string {
 	return s.String()
 }
 

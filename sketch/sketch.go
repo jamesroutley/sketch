@@ -33,7 +33,7 @@ func Repl() error {
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:      "user> ",
-		HistoryFile: "/Users/jamesroutley/.malhistory",
+		HistoryFile: "/Users/jamesroutley/.sketchhistory",
 	})
 	if err != nil {
 		return err
@@ -79,8 +79,8 @@ func rootEnvironment() (*environment.Env, error) {
 	}
 
 	// Eval function. Needs to be here, because it closes over `env`
-	env.Set("eval", &types.MalFunction{
-		Func: func(args ...types.MalType) (types.MalType, error) {
+	env.Set("eval", &types.SketchFunction{
+		Func: func(args ...types.SketchType) (types.SketchType, error) {
 			return Eval(args[0], env)
 		},
 	})

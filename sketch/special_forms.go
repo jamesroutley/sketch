@@ -8,13 +8,13 @@ import (
 )
 
 type specialFormEvaluator func(
-	operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, err error)
+	operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error)
 
 func evalSpecialForm(
-	ast types.MalType, env *environment.Env,
-) (evaluated bool, newAST types.MalType, err error) {
-	tok, ok := ast.(*types.MalList)
+	ast types.SketchType, env *environment.Env,
+) (evaluated bool, newAST types.SketchType, err error) {
+	tok, ok := ast.(*types.SketchList)
 	if !ok {
 		return false, nil, nil
 	}
@@ -23,7 +23,7 @@ func evalSpecialForm(
 		return false, nil, nil
 	}
 
-	operator, ok := items[0].(*types.MalSymbol)
+	operator, ok := items[0].(*types.SketchSymbol)
 	if !ok {
 		return false, nil, nil
 	}
@@ -60,22 +60,22 @@ func evalSpecialForm(
 // #<function>
 // > (add1 2)
 // 3
-func evalFn(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, err error) {
+func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
 	if len(args) != 2 {
 		return nil, fmt.Errorf("fn statements must have two arguments, got %d", len(args))
 	}
 
 	// arguments is the first argument supplied to the fn function (e.g.
 	// `(a)` in the example above)
-	arguments, ok := args[0].(*types.MalList)
+	arguments, ok := args[0].(*types.SketchList)
 	if !ok {
 		return nil, fmt.Errorf("fn statements must have a list as the first arg")
 	}
-	// Cast it from a list of MalType to a list of MalSymbol
-	binds := make([]*types.MalSymbol, len(arguments.Items))
+	// Cast it from a list of SketchType to a list of SketchSymbol
+	binds := make([]*types.SketchSymbol, len(arguments.Items))
 	for i, a := range arguments.Items {
-		bind, ok := a.(*types.MalSymbol)
+		bind, ok := a.(*types.SketchSymbol)
 		if !ok {
 			// TODO: improve this - say which argument isn't a symbol
 			return nil, fmt.Errorf("fn statements must have a list of symbols as the first arg")
@@ -84,7 +84,7 @@ func evalFn(operator *types.MalSymbol, args []types.MalType, env *environment.En
 	}
 
 	// TODO: recomment this
-	return &types.MalFunction{
+	return &types.SketchFunction{
 		TailCallOptimised: true,
 		AST:               args[1],
 		Params:            binds,
@@ -93,7 +93,7 @@ func evalFn(operator *types.MalSymbol, args []types.MalType, env *environment.En
 		// run. When the Lisp function is run, we create a new environment,
 		// which binds the Lisp function's arguments to the parameters
 		// defined when the function was defined.
-		Func: func(exprs ...types.MalType) (types.MalType, error) {
+		Func: func(exprs ...types.SketchType) (types.SketchType, error) {
 			childEnv, err := environment.NewChildEnv(
 				env, binds, exprs,
 			)
@@ -112,12 +112,12 @@ func evalFn(operator *types.MalSymbol, args []types.MalType, env *environment.En
 // 10
 // > a
 // 10
-func evalDef(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, err error) {
+func evalDef(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
 	if len(args) != 2 {
 		return nil, fmt.Errorf("def takes 2 args")
 	}
-	key, ok := args[0].(*types.MalSymbol)
+	key, ok := args[0].(*types.SketchSymbol)
 	if !ok {
 		return nil, fmt.Errorf("def: first arg isn't a symbol")
 	}
@@ -129,25 +129,25 @@ func evalDef(operator *types.MalSymbol, args []types.MalType, env *environment.E
 	return value, nil
 }
 
-func evalQuote(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, err error) {
+func evalQuote(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
 	return args[0], nil
 }
 
 // evalQuasiquoteExpand evaluates the `quasiquoteexpand` macro.
 // This macro is used to test the internal implementation of quasiquote
-func evalQuasiquoteExpand(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, err error) {
+func evalQuasiquoteExpand(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
 	return quasiquote(args[0])
 }
 
 // Creates a new macro
-func evalDefmacro(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, err error) {
+func evalDefmacro(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
 	if len(args) != 2 {
 		return nil, fmt.Errorf("defmacro takes 2 args")
 	}
-	key, ok := args[0].(*types.MalSymbol)
+	key, ok := args[0].(*types.SketchSymbol)
 	if !ok {
 		return nil, fmt.Errorf("defmacro: first arg isn't a symbol")
 	}
@@ -155,7 +155,7 @@ func evalDefmacro(operator *types.MalSymbol, args []types.MalType, env *environm
 	if err != nil {
 		return nil, err
 	}
-	function, ok := value.(*types.MalFunction)
+	function, ok := value.(*types.SketchFunction)
 	if !ok {
 		return nil, fmt.Errorf("defmacro: second arg isn't a function definition")
 	}
@@ -164,7 +164,7 @@ func evalDefmacro(operator *types.MalSymbol, args []types.MalType, env *environm
 	return function, nil
 }
 
-func evalMacroexpand(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, err error) {
+func evalMacroexpand(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
 	return macroExpand(args[0], env)
 }

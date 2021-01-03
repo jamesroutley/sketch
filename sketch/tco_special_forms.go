@@ -11,8 +11,8 @@ import (
 // possible we can remove it, but it might come in useful when we eventually
 // print where in the source code an error comes from.
 type tcoSpecialFormEvaluator func(
-	operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, newEnv *environment.Env, err error)
+	operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, newEnv *environment.Env, err error)
 
 // Some special forms end in an evaluation. We could implement this by
 // recusively calling `Eval` (it's recusive because evalTCOSpecialForm is
@@ -21,9 +21,9 @@ type tcoSpecialFormEvaluator func(
 // to invaluate it in. Eval loops back to the beginning of the function and
 // re-runs itself using these new params.
 func evalTCOSpecialForm(
-	ast types.MalType, env *environment.Env,
-) (evaluated bool, newAST types.MalType, newEnv *environment.Env, err error) {
-	tok, ok := ast.(*types.MalList)
+	ast types.SketchType, env *environment.Env,
+) (evaluated bool, newAST types.SketchType, newEnv *environment.Env, err error) {
+	tok, ok := ast.(*types.SketchList)
 	if !ok {
 		return false, nil, nil, nil
 	}
@@ -32,7 +32,7 @@ func evalTCOSpecialForm(
 		return false, nil, nil, nil
 	}
 
-	operator, ok := items[0].(*types.MalSymbol)
+	operator, ok := items[0].(*types.SketchSymbol)
 	if !ok {
 		return false, nil, nil, nil
 	}
@@ -66,12 +66,12 @@ func evalTCOSpecialForm(
 // > (let (a 1 b (+ a 1)) b)
 // 2 ; a == b, b == a+1 == 2
 func evalLet(
-	operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, newEnv *environment.Env, err error) {
+	operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, newEnv *environment.Env, err error) {
 	if len(args) != 2 {
 		return nil, nil, fmt.Errorf("let takes 2 args")
 	}
-	bindingList, ok := args[0].(*types.MalList)
+	bindingList, ok := args[0].(*types.SketchList)
 	if !ok {
 		return nil, nil, fmt.Errorf("let: first arg isn't a list")
 	}
@@ -81,7 +81,7 @@ func evalLet(
 
 	childEnv := env.ChildEnv()
 	for i := 0; i < len(bindingList.Items); i += 2 {
-		key, ok := bindingList.Items[i].(*types.MalSymbol)
+		key, ok := bindingList.Items[i].(*types.SketchSymbol)
 		if !ok {
 			return nil, nil, fmt.Errorf("let: binding list: arg %d isn't a symbol", i)
 		}
@@ -102,8 +102,8 @@ func evalLet(
 // For TCO, we eval all but the last argument here, then return the last
 // argument to be evaluated in the main Eval loop.
 func evalDo(
-	operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, newEnv *environment.Env, err error) {
+	operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, newEnv *environment.Env, err error) {
 	for _, arg := range args[:len(args)-1] {
 		if _, err := Eval(arg, env); err != nil {
 			return nil, nil, err
@@ -117,8 +117,8 @@ func evalDo(
 // to be evaluated. If it is, return the third param to be evaluated, or
 // `nil` if none is supplied. If none is supplied, the `nil` value is
 // evalulated, but just evaluates to `nil`.
-func evalIf(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, newEnv *environment.Env, err error) {
+func evalIf(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, newEnv *environment.Env, err error) {
 	if numArgs := len(args); numArgs != 2 && numArgs != 3 {
 		return nil, nil, fmt.Errorf("if statements must have two or three arguments, got %d", numArgs)
 	}
@@ -134,11 +134,11 @@ func evalIf(operator *types.MalSymbol, args []types.MalType, env *environment.En
 		return args[2], env, nil
 	}
 
-	return &types.MalNil{}, env, nil
+	return &types.SketchNil{}, env, nil
 }
 
-func evalQuasiquote(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
-) (newAST types.MalType, newEnv *environment.Env, err error) {
+func evalQuasiquote(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, newEnv *environment.Env, err error) {
 	ast, err := quasiquote(args[0])
 	if err != nil {
 		return nil, nil, err
