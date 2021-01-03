@@ -54,7 +54,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		ast, err := reader.ReadStr(fmt.Sprintf("(do %s)", data))
+		ast, err := reader.ReadStrWithComments(fmt.Sprintf("(do %s)", data))
 		if err != nil {
 			log.Fatal(err)
 		}

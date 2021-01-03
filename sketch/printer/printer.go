@@ -45,7 +45,10 @@ func PrettyPrintTopLevelDo(ast types.SketchType) string {
 
 	for _, expr := range list.Items[1:] {
 		fmt.Fprintln(&b, PrettyPrint(expr))
-		fmt.Fprint(&b, "\n")
+		// Comments above top level statements should 'stick' to them
+		if expr.Type() != "comment" {
+			fmt.Fprint(&b, "\n")
+		}
 	}
 
 	return strings.TrimSpace(b.String())

@@ -1,12 +1,20 @@
 (defmacro
   defn
   (fn
-    (name args body)
-    (quasiquote (def (unquote name) (fn (unquote args) (unquote body))))))
+    "defn defines a function. It's equivalent to calling (def <name> (fn <...>))"
+    (name a b & c)
+    (if
+        (empty? c)
+        (quasiquote (def (unquote name) (fn (unquote a) (unquote b))))
+        (quasiquote (def (unquote name) (fn (unquote a) (unquote b) (unquote (car c))))))))
 
 (defmacro
   cond
   (fn
+    "cond takes an even number of arguments, and evaluates each two as a pair.
+    It checks whether the first of the pair evaluates to true, and if so,
+    returns the result of the second. If false, it continues down the pairs of
+    arguments."
     (& xs)
     (if
       (> (count xs) 0)

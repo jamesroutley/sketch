@@ -57,15 +57,18 @@ func Repl() error {
 
 // Rep - read, evaluate, print
 func Rep(s string, env *environment.Env) (string, error) {
-	t, err := reader.ReadStr(s)
+	ast, err := reader.ReadStr(s)
 	if err != nil {
 		return "", err
 	}
-	t, err = Eval(t, env)
+	evaluated, err := Eval(ast, env)
 	if err != nil {
+		if err.Error() == "read comment" {
+			return "", nil
+		}
 		return "", err
 	}
-	return printer.PrStr(t), nil
+	return printer.PrStr(evaluated), nil
 }
 
 func rootEnvironment() (*environment.Env, error) {

@@ -62,37 +62,56 @@ func evalSpecialForm(
 // 3
 func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf("fn statements must have two arguments, got %d", len(args))
+	if numArgs := len(args); numArgs != 2 && numArgs != 3 {
+		return nil, fmt.Errorf("fn statements must have two or three arguments, got %d", numArgs)
+	}
+
+	// Functions can optionally have a docstring set as its first argument
+	var docstring string
+	if len(args) == 3 {
+		str, ok := args[0].(*types.SketchString)
+		if !ok {
+			return nil, fmt.Errorf("if a fn expression has three arguments, the first is expected to be a docstrig, with type string. Got %s", args[0].Type())
+		}
+		docstring = str.Value
+		// We've processed the first argument pop it off the list for the rest
+		// of the processing
+		args = args[1:]
 	}
 
 	// arguments is the first argument supplied to the fn function (e.g.
 	// `(a)` in the example above)
 	arguments, ok := args[0].(*types.SketchList)
 	if !ok {
-		return nil, fmt.Errorf("fn statements must have a list as the first arg")
+		return nil, fmt.Errorf("fn statements must have a list as the first arg, got %s", args[0].Type())
 	}
 	// Cast it from a list of SketchType to a list of SketchSymbol
 	binds := make([]*types.SketchSymbol, len(arguments.Items))
 	for i, a := range arguments.Items {
 		bind, ok := a.(*types.SketchSymbol)
 		if !ok {
-			// TODO: improve this - say which argument isn't a symbol
-			return nil, fmt.Errorf("fn statements must have a list of symbols as the first arg")
+			return nil, fmt.Errorf("fn statements must have a list of symbols as the first arg, the parameter list. Parameter %d (`%s`) has type %s", i, a.String(), a.Type())
 		}
 		binds[i] = bind
 	}
 
-	// TODO: recomment this
 	return &types.SketchFunction{
+		// All functions are by default tail call optimised. This means,
+		// instead of calling this object's Func() method (which recursively
+		// calls Eval), in the Eval loop, we create a new env using `Params`,
+		// and jump to the top of the Eval loop, setting `env` to be this new
+		// environment, and `ast` to be this function's AST value.
 		TailCallOptimised: true,
 		AST:               args[1],
 		Params:            binds,
 		Env:               env,
-		// This Go function is what's run when the Lisp function is
-		// run. When the Lisp function is run, we create a new environment,
-		// which binds the Lisp function's arguments to the parameters
-		// defined when the function was defined.
+		Docs:              docstring,
+		// This is the non-tail call optimised function. We don't call this
+		// during normal execution, but it's sometimes useful to be able to
+		// execute a function from the function type itself. We do this in the
+		// stdlib function `map`, where we want to execute the passed in
+		// function, but don't have access to the Eval loop to tail call
+		// optimise it.
 		Func: func(exprs ...types.SketchType) (types.SketchType, error) {
 			childEnv, err := environment.NewFunctionEnv(
 				env, binds, exprs,
