@@ -1,3 +1,4 @@
+// Package core implements Sketch's builtin functions
 package core
 
 import (
@@ -47,13 +48,6 @@ func init() {
 	register("rest", rest)
 	register("and", and)
 	register("or", or)
-}
-
-func ValidateNArgs(n int, args []types.SketchType) error {
-	if actual := len(args); actual != n {
-		return fmt.Errorf("function takes %d args, got %d", n, actual)
-	}
-	return nil
 }
 
 func ArgsToSketchInt(args []types.SketchType) ([]*types.SketchInt, error) {

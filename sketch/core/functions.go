@@ -42,14 +42,14 @@ func isEmpty(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func count(args ...types.SketchType) (types.SketchType, error) {
-	if _, ok := args[0].(*types.SketchNil); ok {
+	if args[0].Type() == "int" {
 		return &types.SketchInt{
 			Value: 0,
 		}, nil
 	}
-	list, ok := args[0].(*types.SketchList)
-	if !ok {
-		return nil, fmt.Errorf("first argument to count isn't a list")
+	list, err := ValidateListArg("count", args[0], 0)
+	if err != nil {
+		return nil, err
 	}
 
 	return &types.SketchInt{
@@ -58,21 +58,21 @@ func count(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func nth(args ...types.SketchType) (types.SketchType, error) {
-	list, ok := args[0].(*types.SketchList)
-	if !ok {
-		return nil, fmt.Errorf("first argument to nth isn't a list")
+	list, err := ValidateListArg("nth", args[0], 0)
+	if err != nil {
+		return nil, err
 	}
-	index, ok := args[1].(*types.SketchInt)
-	if !ok {
-		return nil, fmt.Errorf("second argument to nth isn't an integer")
+	n, err := ValidateIntArg("nth", args[1], 1)
+	if err != nil {
+		return nil, err
 	}
 
-	return list.Items[index.Value], nil
+	return list.Items[n.Value], nil
 }
 
 func equals(args ...types.SketchType) (types.SketchType, error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf("equals requires 2 args - got %d", len(args))
+	if err := ValidateNArgs("=", 2, args); err != nil {
+		return nil, err
 	}
 
 	return &types.SketchBoolean{
@@ -123,62 +123,6 @@ func equalsInternal(aa types.SketchType, bb types.SketchType) bool {
 	}
 
 	return true
-}
-
-func lt(args ...types.SketchType) (types.SketchType, error) {
-	if err := ValidateNArgs(2, args); err != nil {
-		return nil, err
-	}
-	numbers, err := ArgsToSketchInt(args)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.SketchBoolean{
-		Value: numbers[0].Value < numbers[1].Value,
-	}, nil
-}
-
-func lte(args ...types.SketchType) (types.SketchType, error) {
-	if err := ValidateNArgs(2, args); err != nil {
-		return nil, err
-	}
-	numbers, err := ArgsToSketchInt(args)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.SketchBoolean{
-		Value: numbers[0].Value <= numbers[1].Value,
-	}, nil
-}
-
-func gt(args ...types.SketchType) (types.SketchType, error) {
-	if err := ValidateNArgs(2, args); err != nil {
-		return nil, err
-	}
-	numbers, err := ArgsToSketchInt(args)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.SketchBoolean{
-		Value: numbers[0].Value > numbers[1].Value,
-	}, nil
-}
-
-func gte(args ...types.SketchType) (types.SketchType, error) {
-	if err := ValidateNArgs(2, args); err != nil {
-		return nil, err
-	}
-	numbers, err := ArgsToSketchInt(args)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.SketchBoolean{
-		Value: numbers[0].Value >= numbers[1].Value,
-	}, nil
 }
 
 func readString(args ...types.SketchType) (types.SketchType, error) {
@@ -241,13 +185,13 @@ func concat(args ...types.SketchType) (types.SketchType, error) {
 
 // sketchMap implements map - i.e. run func for all items in a list
 func sketchMap(args ...types.SketchType) (types.SketchType, error) {
-	function, ok := args[0].(*types.SketchFunction)
-	if !ok {
-		return nil, fmt.Errorf("first arg to map must be a function")
+	function, err := ValidateFunctionArg("map", args[0], 0)
+	if err != nil {
+		return nil, err
 	}
-	list, ok := args[1].(*types.SketchList)
-	if !ok {
-		return nil, fmt.Errorf("second arg to map must be a list")
+	list, err := ValidateListArg("map", args[1], 1)
+	if err != nil {
+		return nil, err
 	}
 
 	// Short circuit
@@ -279,13 +223,13 @@ func sketchMap(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func filter(args ...types.SketchType) (types.SketchType, error) {
-	function, ok := args[0].(*types.SketchFunction)
-	if !ok {
-		return nil, fmt.Errorf("first arg to map must be a function")
+	function, err := ValidateFunctionArg("filter", args[0], 0)
+	if err != nil {
+		return nil, err
 	}
-	list, ok := args[1].(*types.SketchList)
-	if !ok {
-		return nil, fmt.Errorf("second arg to map must be a list")
+	list, err := ValidateListArg("filter", args[1], 1)
+	if err != nil {
+		return nil, err
 	}
 
 	// Short circuit

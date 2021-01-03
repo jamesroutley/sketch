@@ -37,10 +37,7 @@ func add(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func subtract(args ...types.SketchType) (types.SketchType, error) {
-	if err := ValidateNArgs(2, args); err != nil {
-		return nil, err
-	}
-	numbers, err := ArgsToSketchInt(args)
+	numbers, err := ValidateNIntArgs("-", 2, args)
 	if err != nil {
 		return nil, err
 	}
@@ -50,10 +47,7 @@ func subtract(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func multiply(args ...types.SketchType) (types.SketchType, error) {
-	if err := ValidateNArgs(2, args); err != nil {
-		return nil, err
-	}
-	numbers, err := ArgsToSketchInt(args)
+	numbers, err := ValidateNIntArgs("*", 2, args)
 	if err != nil {
 		return nil, err
 	}
@@ -63,14 +57,51 @@ func multiply(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func divide(args ...types.SketchType) (types.SketchType, error) {
-	if err := ValidateNArgs(2, args); err != nil {
-		return nil, err
-	}
-	numbers, err := ArgsToSketchInt(args)
+	numbers, err := ValidateNIntArgs("/", 2, args)
 	if err != nil {
 		return nil, err
 	}
 	return &types.SketchInt{
 		Value: numbers[0].Value / numbers[1].Value,
+	}, nil
+}
+
+func lt(args ...types.SketchType) (types.SketchType, error) {
+	numbers, err := ValidateNIntArgs("<", 2, args)
+	if err != nil {
+		return nil, err
+	}
+	return &types.SketchBoolean{
+		Value: numbers[0].Value < numbers[1].Value,
+	}, nil
+}
+
+func lte(args ...types.SketchType) (types.SketchType, error) {
+	numbers, err := ValidateNIntArgs("<=", 2, args)
+	if err != nil {
+		return nil, err
+	}
+	return &types.SketchBoolean{
+		Value: numbers[0].Value <= numbers[1].Value,
+	}, nil
+}
+
+func gt(args ...types.SketchType) (types.SketchType, error) {
+	numbers, err := ValidateNIntArgs(">", 2, args)
+	if err != nil {
+		return nil, err
+	}
+	return &types.SketchBoolean{
+		Value: numbers[0].Value > numbers[1].Value,
+	}, nil
+}
+
+func gte(args ...types.SketchType) (types.SketchType, error) {
+	numbers, err := ValidateNIntArgs(">=", 2, args)
+	if err != nil {
+		return nil, err
+	}
+	return &types.SketchBoolean{
+		Value: numbers[0].Value >= numbers[1].Value,
 	}, nil
 }
