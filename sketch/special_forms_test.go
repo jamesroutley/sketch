@@ -85,7 +85,7 @@ func TestSpecialForm_Defmacro(t *testing.T) {
 		{
 			name: "defmacro defines a new macro",
 			input: `
-(defmacro! nil!  (fn
+(defmacro nil!  (fn
 	(name)
 	(quasiquote (def (unquote name) nil))))`,
 			expected: "#<function>",
@@ -94,7 +94,7 @@ func TestSpecialForm_Defmacro(t *testing.T) {
 			name: "defmacro defines a new macro, which is callable",
 			input: `
 (do
-	(defmacro! nil!  (fn
+	(defmacro nil!  (fn
 		(name)
 		(quasiquote (def (unquote name) nil))))
 	(def a 1)
@@ -113,7 +113,7 @@ func TestSpecialForm_Macroexpand(t *testing.T) {
 			name: "macroexpand expands and prints a macro, without evaluating it",
 			input: `
 (do
-	(defmacro! nil! (fn (name) (quasiquote (def (unquote name) nil))))
+	(defmacro nil! (fn (name) (quasiquote (def (unquote name) nil))))
 	(macroexpand (nil! a))
 )
 `,

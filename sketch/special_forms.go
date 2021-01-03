@@ -40,7 +40,7 @@ func evalSpecialForm(
 		evaluator = evalQuote
 	case "quasiquoteexpand":
 		evaluator = evalQuasiquoteExpand
-	case "defmacro!":
+	case "defmacro":
 		evaluator = evalDefmacro
 	case "macroexpand":
 		evaluator = evalMacroexpand
@@ -145,11 +145,11 @@ func evalQuasiquoteExpand(operator *types.MalSymbol, args []types.MalType, env *
 func evalDefmacro(operator *types.MalSymbol, args []types.MalType, env *environment.Env,
 ) (newAST types.MalType, err error) {
 	if len(args) != 2 {
-		return nil, fmt.Errorf("defmacro! takes 2 args")
+		return nil, fmt.Errorf("defmacro takes 2 args")
 	}
 	key, ok := args[0].(*types.MalSymbol)
 	if !ok {
-		return nil, fmt.Errorf("defmacro!: first arg isn't a symbol")
+		return nil, fmt.Errorf("defmacro: first arg isn't a symbol")
 	}
 	value, err := Eval(args[1], env)
 	if err != nil {
@@ -157,7 +157,7 @@ func evalDefmacro(operator *types.MalSymbol, args []types.MalType, env *environm
 	}
 	function, ok := value.(*types.MalFunction)
 	if !ok {
-		return nil, fmt.Errorf("defmacro!: second arg isn't a function definition")
+		return nil, fmt.Errorf("defmacro: second arg isn't a function definition")
 	}
 	function.IsMacro = true
 	env.Set(key.Value, function)
