@@ -94,7 +94,7 @@ func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environm
 		// which binds the Lisp function's arguments to the parameters
 		// defined when the function was defined.
 		Func: func(exprs ...types.SketchType) (types.SketchType, error) {
-			childEnv, err := environment.NewChildEnv(
+			childEnv, err := environment.NewFunctionEnv(
 				env, binds, exprs,
 			)
 			if err != nil {

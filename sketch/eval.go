@@ -130,7 +130,7 @@ func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) 
 
 			// Function is tail call optimised.
 			// Construct the correct environment it should be run in
-			childEnv, err := environment.NewChildEnv(
+			childEnv, err := environment.NewFunctionEnv(
 				function.Env.(*environment.Env), function.Params, list.Items[1:],
 			)
 			if err != nil {

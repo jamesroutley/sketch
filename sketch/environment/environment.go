@@ -1,3 +1,9 @@
+// Package environment defines Sketch's environments, which are objects which
+// store the mapping of symbols to values bound in a particular scope. For
+// example, when the Sketch interpreter starts, we create a root environment,
+// into which we load all the core functions. When the user defines a function,
+// we create a new environment in which the arguments the function was called
+// with are bound to the function's parameter names.
 package environment
 
 import (
@@ -18,10 +24,10 @@ func NewEnv() *Env {
 	}
 }
 
-// NewChildEnv creates a new environment with `parent` as its outer
+// NewFunctionEnv creates a new environment with `parent` as its outer
 // environment. It also takes a a list of arguments, which should be bound to
 // the symbols in `parameters` one by one.
-func NewChildEnv(parent *Env, parameters []*types.SketchSymbol, arguments []types.SketchType) (*Env, error) {
+func NewFunctionEnv(parent *Env, parameters []*types.SketchSymbol, arguments []types.SketchType) (*Env, error) {
 	env := &Env{
 		Outer: parent,
 		Data:  map[string]types.SketchType{},
