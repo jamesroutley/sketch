@@ -57,6 +57,19 @@ func count(args ...types.MalType) (types.MalType, error) {
 	}, nil
 }
 
+func nth(args ...types.MalType) (types.MalType, error) {
+	list, ok := args[0].(*types.MalList)
+	if !ok {
+		return nil, fmt.Errorf("first argument to nth isn't a list")
+	}
+	index, ok := args[1].(*types.MalInt)
+	if !ok {
+		return nil, fmt.Errorf("second argument to nth isn't an integer")
+	}
+
+	return list.Items[index.Value], nil
+}
+
 func equals(args ...types.MalType) (types.MalType, error) {
 	if len(args) != 2 {
 		return nil, fmt.Errorf("equals requires 2 args - got %d", len(args))
@@ -315,7 +328,7 @@ func first(args ...types.MalType) (types.MalType, error) {
 		}
 		return arg.Items[0], nil
 	default:
-		return nil, fmt.Errorf("first arg to first must be a list")
+		return nil, fmt.Errorf("first arg to first must be a list, got %s %s", arg.Type(), arg.String())
 	}
 }
 
@@ -329,7 +342,7 @@ func rest(args ...types.MalType) (types.MalType, error) {
 		}
 		return &types.MalList{Items: arg.Items[1:]}, nil
 	default:
-		return nil, fmt.Errorf("first arg to first must be a list")
+		return nil, fmt.Errorf("first arg to rest must be a list, got %s", arg.Type())
 	}
 }
 

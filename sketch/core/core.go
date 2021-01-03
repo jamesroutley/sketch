@@ -31,6 +31,7 @@ func init() {
 	register("list?", isList)
 	register("empty?", isEmpty)
 	register("count", count)
+	register("nth", nth)
 	register("=", equals)
 	register("<", lt)
 	register("<=", lte)

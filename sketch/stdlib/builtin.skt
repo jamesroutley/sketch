@@ -1,5 +1,17 @@
 (defmacro!
-    defn
-    (fn
-        (name args body)
-        (quasiquote (def (unquote name) (fn (unquote args) (unquote body))))))
+  defn
+  (fn
+    (name args body)
+    (quasiquote (def (unquote name) (fn (unquote args) (unquote body))))))
+
+(defmacro!
+  cond
+  (fn
+    (& xs)
+    (if
+      (> (count xs) 0)
+      (list
+        (quote if)
+        (first xs)
+        (if (> (count xs) 1) (nth xs 1) (throw "odd number of forms to cond"))
+        (cons (quote cond) (rest (rest xs)))))))

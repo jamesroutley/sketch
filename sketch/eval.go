@@ -221,7 +221,6 @@ func quasiquote(ast types.MalType) (types.MalType, error) {
 	for i := len(items) - 1; i >= 0; i-- {
 		element := items[i]
 
-		// TODO: implement `splice-unquote` functionality
 		if args, ok := isSpliceUnquoteForm(element); ok {
 			quasiquoted = &types.MalList{
 				Items: []types.MalType{
