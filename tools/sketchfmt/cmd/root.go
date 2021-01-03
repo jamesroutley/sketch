@@ -1,18 +1,4 @@
-/*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+// Package cmd implements sketchfmt's CLI
 package cmd
 
 import (
@@ -24,28 +10,38 @@ import (
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/spf13/cobra"
-
-	homedir "github.com/mitchellh/go-homedir"
-	"github.com/spf13/viper"
 )
-
-var cfgFile string
 
 var rewrite bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "sketchfmt",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Use:   "sketchfmt [path]",
+	Short: "Automatically formats Sketch files",
+	Long: `Sketchfmt is an autoformatter for the Sketch language.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Sketchfmt is ultimately pragmatic. It exists to simplify development and remove
+discussions around formatting Sketch code. It might look different to how other
+Lisp code is conventionally formatted, but the output of Sketchfmt is the
+definition of idiomatic Sketch code.
+
+It formats with the following rules:
+
+1.  Indentation is done with tabs
+2.  When formatting files, one newline is placed between each top level
+	expression.
+3.	Any top level comments are assumed to be about the expression which comes
+	below it. The comment is placed on the line above the next expression.
+4.  If a list doesn't contain a comment, it will be put on a single line, if
+	that results in a line of less than 80 chars. If not, each item in the list
+	will be placed on a separate line.
+5.  If a list contains a comment, each element is always put on a separate
+	line. The comment is assumed to be about the item which came before the
+	comment, and the comment is placed on the same line as it.
+
+By default, Sketchfmt prints the formatted file to stdout. You can supply the
+--rewrite/-r flag to get Sketchfmt to rewrite the file itself.`,
 	Args: cobra.ExactArgs(1),
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		filename := args[0]
 
@@ -82,41 +78,5 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sketchfmt.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolVarP(&rewrite, "rewrite", "r", false, "Rewrite the file, instead of printing to stdout")
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".sketchfmt" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".sketchfmt")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
 }
