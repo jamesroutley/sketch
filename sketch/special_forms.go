@@ -2,8 +2,12 @@ package sketch
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	"github.com/jamesroutley/sketch/sketch/environment"
+	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/jamesroutley/sketch/sketch/types"
 )
 
@@ -44,6 +48,12 @@ func evalSpecialForm(
 		evaluator = evalDefmacro
 	case "macroexpand":
 		evaluator = evalMacroexpand
+	case "import":
+		evaluator = evalImport
+	case "export-as":
+		evaluator = evalExportAs
+	case "module-lookup":
+		evaluator = evalModuleLookup
 
 	default:
 		return false, nil, nil
@@ -186,4 +196,125 @@ func evalDefmacro(operator *types.SketchSymbol, args []types.SketchType, env *en
 func evalMacroexpand(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
 	return macroExpand(args[0], env)
+}
+
+// evalImport imports a module.
+func evalImport(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
+	relativePath, ok := args[0].(*types.SketchString)
+	if !ok {
+		return nil, fmt.Errorf("import: first arg isn't a string")
+	}
+
+	goPath := os.Getenv("GOPATH")
+	if goPath == "" {
+		return nil, fmt.Errorf("import: $GOPATH not set")
+	}
+
+	path := filepath.Join(goPath, "src", relativePath.Value)
+
+	moduleEnv, err := rootEnvironment()
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	ast, err := reader.ReadStr(fmt.Sprintf(`(do %s)`, data))
+	if err != nil {
+		return nil, err
+	}
+	evaluated, err := Eval(ast, moduleEnv)
+	if err != nil {
+		if err.Error() == "read comment" {
+			return nil, fmt.Errorf("to be importable, %s must end in an `export-as` statement", relativePath)
+		}
+		return nil, err
+	}
+
+	module, ok := evaluated.(*types.SketchModule)
+	if !ok {
+		fmt.Println(evaluated.Type())
+		return nil, fmt.Errorf("to be importable, %s must end in an `export-as` statement", relativePath)
+	}
+
+	env.Set(module.DefaultName, module)
+
+	// - Locates the corresponding source code file
+	// - Evaluates it in the context of a new environment
+	// - Checks that a module is returned. This will happen if the last line in the
+	//   file is an `export-as` call. If not, error.
+	// - Binds the module to the importing environment, using `module.ExportedName`,
+	//   or the name specified in an `import-as` expression
+	// - Return the imported module. Or nil?
+	return module, nil
+}
+
+func evalExportAs(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
+	defaultName, ok := args[0].(*types.SketchSymbol)
+	if !ok {
+		return nil, fmt.Errorf("export-as: first arg isn't a symbol")
+	}
+
+	exports, ok := args[1].(*types.SketchList)
+	if !ok {
+		return nil, fmt.Errorf("export-as: second arg isn't a list")
+	}
+
+	var exported []string
+	for i, export := range exports.Items {
+		export, ok := export.(*types.SketchSymbol)
+		if !ok {
+			return nil, fmt.Errorf("export-as: export %d isn't a symbol", i)
+		}
+
+		// Check exported symbol is in the environment
+		_, err := env.Get(export.Value)
+		if err != nil {
+			return nil, fmt.Errorf("export-as: cannot export: %w", err)
+		}
+		exported = append(exported, export.Value)
+	}
+
+	module := &types.SketchModule{
+		Environment: env,
+		SourceFile:  "TODO",
+		Exported:    exported,
+		DefaultName: defaultName.Value,
+		// Maybe we shoulnd't set this here
+		Name: defaultName.Value,
+	}
+
+	// - Creates a new `SketchModule` object using the current environment. It
+	//   validates that all exported symbols are present in that environment
+	// - Returns the module
+	return module, nil
+}
+
+func evalModuleLookup(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
+	moduleName, ok := args[0].(*types.SketchSymbol)
+	if !ok {
+		return nil, fmt.Errorf("export-as: first arg isn't a symbol")
+	}
+	key, ok := args[1].(*types.SketchSymbol)
+	if !ok {
+		return nil, fmt.Errorf("export-as: second arg isn't a symbol")
+	}
+
+	module, err := env.Get(moduleName.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	m, ok := module.(*types.SketchModule)
+	if !ok {
+		return nil, fmt.Errorf("module-lookup: %s isn't a module, got %s", moduleName.Value, module.Type())
+	}
+
+	return m.Environment.Get(key.Value)
 }

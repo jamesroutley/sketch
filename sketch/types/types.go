@@ -1,3 +1,4 @@
+// Package types defines the objects used to represent datatypes in Sketch
 package types
 
 import (
@@ -252,4 +253,27 @@ func (c *SketchComment) Type() string {
 
 func (c *SketchComment) PrettyPrint(indent int) string {
 	return c.String()
+}
+
+type SketchModule struct {
+	Environment EnvType
+	SourceFile  string // filepath relative to $GOPATH/src
+	Exported    []string
+	// The name of the module, as specified in the `export-as` statement
+	DefaultName string
+	// The name used to refer to this module in the scope it's being used.
+	// This will be different from DefaultName if (import-as) is used.
+	Name string
+}
+
+func (m *SketchModule) String() string {
+	return "#<module>"
+}
+
+func (m *SketchModule) Type() string {
+	return "module"
+}
+
+func (m *SketchModule) PrettyPrint(indent int) string {
+	return m.String()
 }
