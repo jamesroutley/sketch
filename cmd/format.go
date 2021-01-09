@@ -1,23 +1,19 @@
-// Package cmd implements sketchfmt's CLI
 package cmd
 
 import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/spf13/cobra"
 )
 
-var rewrite bool
-
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "sketchfmt [path]",
-	Short: "Automatically formats Sketch files",
+// formatCmd represents the format command
+var formatCmd = &cobra.Command{
+	Use:   "format [path]",
+	Short: "Automatically formats a Sketch file",
 	Long: `Sketchfmt is an autoformatter for the Sketch language.
 
 Sketchfmt is ultimately pragmatic. It exists to simplify development and remove
@@ -40,7 +36,7 @@ It formats with the following rules:
 	comment, and the comment is placed on the same line as it.
 
 By default, Sketchfmt prints the formatted file to stdout. You can supply the
---rewrite/-r flag to get Sketchfmt to rewrite the file itself.`,
+--write/-w flag to get Sketchfmt to write the file itself.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		filename := args[0]
@@ -57,7 +53,12 @@ By default, Sketchfmt prints the formatted file to stdout. You can supply the
 
 		formatted := printer.PrettyPrintTopLevelDo(ast)
 
-		if rewrite {
+		write, err := cmd.Flags().GetBool("write")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if write {
 			if err := ioutil.WriteFile(filename, []byte(formatted), 0777); err != nil {
 				log.Fatal(err)
 			}
@@ -68,15 +69,9 @@ By default, Sketchfmt prints the formatted file to stdout. You can supply the
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
 func init() {
-	rootCmd.Flags().BoolVarP(&rewrite, "rewrite", "r", false, "Rewrite the file, instead of printing to stdout")
+	rootCmd.AddCommand(formatCmd)
+
+	// TODO; move to other type of flag
+	formatCmd.Flags().BoolP("write", "w", false, "Write to the file, instead of printing to stdout")
 }
