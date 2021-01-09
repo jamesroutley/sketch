@@ -1,4 +1,4 @@
-package sketch
+package evaluator
 
 import (
 	"github.com/jamesroutley/sketch/sketch/environment"

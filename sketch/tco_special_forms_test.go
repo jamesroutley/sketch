@@ -72,12 +72,23 @@ func TestSpecialForm_Do(t *testing.T) {
 func TestSpecialForm_Quasiquote(t *testing.T) {
 	cases := []*TestCase{
 		{
-			name: "quasiquote ",
+			name: "quasiquote",
 			input: `
 (do
 	(def a "world")
 	(quasiquote ("hello" (unquote a))))`,
 			expected: `("hello" "world")`,
+		},
+	}
+	runTests(t, cases)
+}
+
+func TestSpecialForm_Eval(t *testing.T) {
+	cases := []*TestCase{
+		{
+			name:     "eval",
+			input:    `(eval (list + 1 1))`,
+			expected: `2`,
 		},
 	}
 	runTests(t, cases)

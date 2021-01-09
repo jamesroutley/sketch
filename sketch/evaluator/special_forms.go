@@ -1,4 +1,4 @@
-package sketch
+package evaluator
 
 import (
 	"fmt"
@@ -54,6 +54,8 @@ func evalSpecialForm(
 		evaluator = evalExportAs
 	case "module-lookup":
 		evaluator = evalModuleLookup
+	case "eval1":
+		evaluator = evalEval1
 
 	default:
 		return false, nil, nil
@@ -213,7 +215,7 @@ func evalImport(operator *types.SketchSymbol, args []types.SketchType, env *envi
 
 	path := filepath.Join(goPath, "src", relativePath.Value)
 
-	moduleEnv, err := rootEnvironment()
+	moduleEnv, err := RootEnvironment()
 	if err != nil {
 		return nil, err
 	}
@@ -317,4 +319,10 @@ func evalModuleLookup(operator *types.SketchSymbol, args []types.SketchType, env
 	}
 
 	return m.Environment.Get(key.Value)
+}
+
+func evalEval1(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, err error) {
+	fmt.Println(args[0])
+	return Eval(args[0], env)
 }

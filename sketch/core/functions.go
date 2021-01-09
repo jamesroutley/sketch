@@ -137,7 +137,7 @@ func readString(args ...types.SketchType) (types.SketchType, error) {
 func slurp(args ...types.SketchType) (types.SketchType, error) {
 	filename, ok := args[0].(*types.SketchString)
 	if !ok {
-		return nil, fmt.Errorf("read-string takes a string")
+		return nil, fmt.Errorf("slurp takes a string")
 	}
 
 	data, err := ioutil.ReadFile(filename.Value)
@@ -246,7 +246,7 @@ func filter(args ...types.SketchType) (types.SketchType, error) {
 			if err != nil {
 				return err
 			}
-			if isTruthy(passed) {
+			if IsTruthy(passed) {
 				filteredItems = append(filteredItems, item)
 			}
 
@@ -296,7 +296,7 @@ func and(args ...types.SketchType) (types.SketchType, error) {
 	}
 	result := true
 	for _, arg := range args {
-		if !isTruthy(arg) {
+		if !IsTruthy(arg) {
 			result = false
 			break
 		}
@@ -312,7 +312,7 @@ func or(args ...types.SketchType) (types.SketchType, error) {
 	}
 	result := false
 	for _, arg := range args {
-		if isTruthy(arg) {
+		if IsTruthy(arg) {
 			result = true
 			break
 		}
@@ -325,9 +325,9 @@ func or(args ...types.SketchType) (types.SketchType, error) {
 // func list(args ...types.SketchType) (types.SketchType, error) {
 // }
 
-// isTruthy returns a type's truthiness. Currently: it's falsy if the type is
+// IsTruthy returns a type's truthiness. Currently: it's falsy if the type is
 // `nil` or the boolean 'false'. All other values are truthy.
-func isTruthy(t types.SketchType) bool {
+func IsTruthy(t types.SketchType) bool {
 	switch token := t.(type) {
 	case *types.SketchNil:
 		return false

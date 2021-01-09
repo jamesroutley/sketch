@@ -1,11 +1,46 @@
-package sketch
+// Package evaluator implements Sketch's evaluator.
+package evaluator
 
 import (
 	"fmt"
 
+	"github.com/jamesroutley/sketch/sketch/core"
 	"github.com/jamesroutley/sketch/sketch/environment"
+	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/jamesroutley/sketch/sketch/types"
 )
+
+// RootEnvironment initialises a root environment loaded with all the built in
+// functions and variables defined in the core package. This environment is
+// used as the context in which Sketch code is evaluated.
+func RootEnvironment() (*environment.Env, error) {
+	env := environment.NewEnv()
+	for key, value := range core.EnvironmentItems {
+		env.Set(key, value)
+	}
+
+	if core.SketchCode == "" {
+		return env, nil
+	}
+	ast, err := reader.ReadStr(fmt.Sprintf("(do %s)", core.SketchCode))
+	if err != nil {
+		return nil, err
+	}
+	_, err = Eval(ast, env)
+	if err != nil {
+		return nil, err
+	}
+
+	return env, nil
+}
+
+func Evaluate(ast types.SketchType) (types.SketchType, error) {
+	env, err := RootEnvironment()
+	if err != nil {
+		return nil, err
+	}
+	return Eval(ast, env)
+}
 
 // Eval evaulates a piece of parsed code.
 // The way code is evaluated depends on its structure.
@@ -169,16 +204,4 @@ func evalAST(ast types.SketchType, env *environment.Env) (types.SketchType, erro
 		}, nil
 	}
 	return ast, nil
-}
-
-// isTruthy returns a type's truthiness. Currently: it's falsy if the type is
-// `nil` or the boolean 'false'. All other values are truthy.
-func isTruthy(t types.SketchType) bool {
-	switch token := t.(type) {
-	case *types.SketchNil:
-		return false
-	case *types.SketchBoolean:
-		return token.Value
-	}
-	return true
 }

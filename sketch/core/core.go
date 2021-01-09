@@ -1,4 +1,4 @@
-// Package core implements Sketch's builtin functions
+// Package core implements Sketch's builtin functions and variables.
 package core
 
 import (
@@ -7,19 +7,17 @@ import (
 	"github.com/jamesroutley/sketch/sketch/types"
 )
 
-type NamespaceItem struct {
-	Symbol *types.SketchSymbol
-	Func   *types.SketchFunction
-}
+var EnvironmentItems = map[string]types.SketchType{}
 
-var Namespace []*NamespaceItem
+// TODO: move to separate file and pull with go-bindata
+var SketchCode = `
+(def not (fn (a) (if a false true)))
+
+(def load-file (fn (f) (eval (read-string (+ "(do " (slurp f) "\nnil)")))))
+`
 
 func register(symbol string, f func(...types.SketchType) (types.SketchType, error)) {
-	item := &NamespaceItem{
-		Symbol: &types.SketchSymbol{Value: symbol},
-		Func:   &types.SketchFunction{Func: f},
-	}
-	Namespace = append(Namespace, item)
+	EnvironmentItems[symbol] = &types.SketchFunction{Func: f}
 }
 
 func init() {

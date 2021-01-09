@@ -3,30 +3,33 @@ package sketch
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+	"io/ioutil"
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/jamesroutley/sketch/sketch/core"
 	"github.com/jamesroutley/sketch/sketch/environment"
+	"github.com/jamesroutley/sketch/sketch/evaluator"
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
-	"github.com/jamesroutley/sketch/sketch/types"
 )
 
 func RunFile(filename string) error {
-	env, err := rootEnvironment()
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
 	}
 
-	_, err = Rep(fmt.Sprintf(`(load-file "%s")`, filename), env)
+	ast, err := reader.ReadStr(fmt.Sprintf("(do %s)", data))
+	if err != nil {
+		return err
+	}
+
+	_, err = evaluator.Evaluate(ast)
 	return err
 }
 
 func Repl() error {
-	env, err := rootEnvironment()
+	env, err := evaluator.RootEnvironment()
 	if err != nil {
 		return err
 	}
@@ -61,7 +64,7 @@ func Rep(s string, env *environment.Env) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	evaluated, err := Eval(ast, env)
+	evaluated, err := evaluator.Eval(ast, env)
 	if err != nil {
 		if err.Error() == "read comment" {
 			return "", nil
@@ -69,51 +72,4 @@ func Rep(s string, env *environment.Env) (string, error) {
 		return "", err
 	}
 	return printer.PrStr(evaluated), nil
-}
-
-func rootEnvironment() (*environment.Env, error) {
-	env := environment.NewEnv()
-	for _, item := range core.Namespace {
-		env.Set(item.Symbol.Value, item.Func)
-	}
-
-	for _, item := range core.Namespace {
-		env.Set(item.Symbol.Value, item.Func)
-	}
-
-	// Eval function. Needs to be here, because it closes over `env`
-	env.Set("eval", &types.SketchFunction{
-		Func: func(args ...types.SketchType) (types.SketchType, error) {
-			return Eval(args[0], env)
-		},
-	})
-
-	// Builtin functions defined in lisp
-	if _, err := Rep("(def not (fn (a) (if a false true)))", env); err != nil {
-		return nil, err
-	}
-
-	// TODO: move to stdlib. Also not sure if it needs to call eval
-	if _, err := Rep("(def load-file (fn (f) (eval (read-string (+ \"(do \" (slurp f) \"\nnil)\")))))", env); err != nil {
-		return nil, err
-	}
-
-	// Load stdlib
-	gopath := os.Getenv("GOPATH")
-	if gopath == "" {
-		return nil, fmt.Errorf("$GOPATH not set")
-	}
-	stdlibDir := filepath.Join(gopath, "src", "github.com", "jamesroutley", "sketch", "sketch", "stdlib")
-	stdlibFiles, err := filepath.Glob(filepath.Join(stdlibDir, "*.skt"))
-	if err != nil {
-		return nil, err
-	}
-
-	for _, filename := range stdlibFiles {
-		if _, err := Rep(fmt.Sprintf(`(load-file "%s")`, filename), env); err != nil {
-			return nil, fmt.Errorf("error loading file %s: %w", filename, err)
-		}
-	}
-
-	return env, nil
 }

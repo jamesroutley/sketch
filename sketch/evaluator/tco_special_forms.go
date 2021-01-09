@@ -1,8 +1,9 @@
-package sketch
+package evaluator
 
 import (
 	"fmt"
 
+	"github.com/jamesroutley/sketch/sketch/core"
 	"github.com/jamesroutley/sketch/sketch/environment"
 	"github.com/jamesroutley/sketch/sketch/types"
 )
@@ -49,6 +50,8 @@ func evalTCOSpecialForm(
 		evaluator = evalDo
 	case "quasiquote":
 		evaluator = evalQuasiquote
+	case "eval":
+		evaluator = evalEval
 
 	default:
 		return false, nil, nil, nil
@@ -126,7 +129,7 @@ func evalIf(operator *types.SketchSymbol, args []types.SketchType, env *environm
 	if err != nil {
 		return nil, nil, err
 	}
-	if isTruthy(condition) {
+	if core.IsTruthy(condition) {
 		return args[1], env, nil
 	}
 
@@ -144,4 +147,16 @@ func evalQuasiquote(operator *types.SketchSymbol, args []types.SketchType, env *
 		return nil, nil, err
 	}
 	return ast, env, nil
+}
+
+func evalEval(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
+) (newAST types.SketchType, newEnv *environment.Env, err error) {
+	// First evaluate the call to eval's arguments (just like a normal function
+	// call)
+	evaluated, err := Eval(args[0], env)
+	if err != nil {
+		return nil, nil, err
+	}
+	// Then, return that, to be evauluated by the TCO loop
+	return evaluated, env, nil
 }
