@@ -9,6 +9,7 @@ import (
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/jamesroutley/sketch/sketch/types"
+	"github.com/jamesroutley/sketch/sketch/validation"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -47,7 +48,7 @@ func count(args ...types.SketchType) (types.SketchType, error) {
 			Value: 0,
 		}, nil
 	}
-	list, err := ValidateListArg("count", args[0], 0)
+	list, err := validation.ListArg("count", args[0], 0)
 	if err != nil {
 		return nil, err
 	}
@@ -58,11 +59,11 @@ func count(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func nth(args ...types.SketchType) (types.SketchType, error) {
-	list, err := ValidateListArg("nth", args[0], 0)
+	list, err := validation.ListArg("nth", args[0], 0)
 	if err != nil {
 		return nil, err
 	}
-	n, err := ValidateIntArg("nth", args[1], 1)
+	n, err := validation.IntArg("nth", args[1], 1)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +72,7 @@ func nth(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func equals(args ...types.SketchType) (types.SketchType, error) {
-	if err := ValidateNArgs("=", 2, args); err != nil {
+	if err := validation.NArgs("=", 2, args); err != nil {
 		return nil, err
 	}
 
@@ -185,11 +186,11 @@ func concat(args ...types.SketchType) (types.SketchType, error) {
 
 // sketchMap implements map - i.e. run func for all items in a list
 func sketchMap(args ...types.SketchType) (types.SketchType, error) {
-	function, err := ValidateFunctionArg("map", args[0], 0)
+	function, err := validation.FunctionArg("map", args[0], 0)
 	if err != nil {
 		return nil, err
 	}
-	list, err := ValidateListArg("map", args[1], 1)
+	list, err := validation.ListArg("map", args[1], 1)
 	if err != nil {
 		return nil, err
 	}
@@ -223,11 +224,11 @@ func sketchMap(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func filter(args ...types.SketchType) (types.SketchType, error) {
-	function, err := ValidateFunctionArg("filter", args[0], 0)
+	function, err := validation.FunctionArg("filter", args[0], 0)
 	if err != nil {
 		return nil, err
 	}
-	list, err := ValidateListArg("filter", args[1], 1)
+	list, err := validation.ListArg("filter", args[1], 1)
 	if err != nil {
 		return nil, err
 	}

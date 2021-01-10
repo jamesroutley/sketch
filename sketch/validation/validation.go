@@ -1,4 +1,4 @@
-package core
+package validation
 
 import (
 	"fmt"
@@ -6,20 +6,20 @@ import (
 	"github.com/jamesroutley/sketch/sketch/types"
 )
 
-func ValidateNArgs(fnName string, n int, args []types.SketchType) error {
+func NArgs(fnName string, n int, args []types.SketchType) error {
 	if numArgs := len(args); numArgs != n {
 		return fmt.Errorf("the function %s expects %d arguments, but got %d", fnName, n, numArgs)
 	}
 	return nil
 }
 
-func ValidateNIntArgs(fnName string, n int, args []types.SketchType) ([]*types.SketchInt, error) {
-	if err := ValidateNArgs(fnName, n, args); err != nil {
+func NIntArgs(fnName string, n int, args []types.SketchType) ([]*types.SketchInt, error) {
+	if err := NArgs(fnName, n, args); err != nil {
 		return nil, err
 	}
 	numbers := make([]*types.SketchInt, len(args))
 	for i, arg := range args {
-		if err := ValidateArgType(fnName, arg, "int", i); err != nil {
+		if err := ArgType(fnName, arg, "int", i); err != nil {
 			return nil, err
 		}
 		numbers[i] = arg.(*types.SketchInt)
@@ -27,34 +27,34 @@ func ValidateNIntArgs(fnName string, n int, args []types.SketchType) ([]*types.S
 	return numbers, nil
 }
 
-func ValidateListArg(
+func ListArg(
 	fnName string, arg types.SketchType, position int,
 ) (*types.SketchList, error) {
-	if err := ValidateArgType(fnName, arg, "list", position); err != nil {
+	if err := ArgType(fnName, arg, "list", position); err != nil {
 		return nil, err
 	}
 	return arg.(*types.SketchList), nil
 }
 
-func ValidateIntArg(
+func IntArg(
 	fnName string, arg types.SketchType, position int,
 ) (*types.SketchInt, error) {
-	if err := ValidateArgType(fnName, arg, "int", position); err != nil {
+	if err := ArgType(fnName, arg, "int", position); err != nil {
 		return nil, err
 	}
 	return arg.(*types.SketchInt), nil
 }
 
-func ValidateFunctionArg(
+func FunctionArg(
 	fnName string, arg types.SketchType, position int,
 ) (*types.SketchFunction, error) {
-	if err := ValidateArgType(fnName, arg, "function", position); err != nil {
+	if err := ArgType(fnName, arg, "function", position); err != nil {
 		return nil, err
 	}
 	return arg.(*types.SketchFunction), nil
 }
 
-func ValidateArgType(
+func ArgType(
 	fnName string, arg types.SketchType, expectedType string, position int,
 ) error {
 	if arg.Type() != expectedType {

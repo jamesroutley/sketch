@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jamesroutley/sketch/sketch/types"
+	"github.com/jamesroutley/sketch/sketch/validation"
 )
 
 func add(args ...types.SketchType) (types.SketchType, error) {
@@ -37,7 +38,7 @@ func add(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func subtract(args ...types.SketchType) (types.SketchType, error) {
-	numbers, err := ValidateNIntArgs("-", 2, args)
+	numbers, err := validation.NIntArgs("-", 2, args)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func subtract(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func multiply(args ...types.SketchType) (types.SketchType, error) {
-	numbers, err := ValidateNIntArgs("*", 2, args)
+	numbers, err := validation.NIntArgs("*", 2, args)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +58,7 @@ func multiply(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func divide(args ...types.SketchType) (types.SketchType, error) {
-	numbers, err := ValidateNIntArgs("/", 2, args)
+	numbers, err := validation.NIntArgs("/", 2, args)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +68,7 @@ func divide(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func lt(args ...types.SketchType) (types.SketchType, error) {
-	numbers, err := ValidateNIntArgs("<", 2, args)
+	numbers, err := validation.NIntArgs("<", 2, args)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func lt(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func lte(args ...types.SketchType) (types.SketchType, error) {
-	numbers, err := ValidateNIntArgs("<=", 2, args)
+	numbers, err := validation.NIntArgs("<=", 2, args)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +88,7 @@ func lte(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func gt(args ...types.SketchType) (types.SketchType, error) {
-	numbers, err := ValidateNIntArgs(">", 2, args)
+	numbers, err := validation.NIntArgs(">", 2, args)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +98,7 @@ func gt(args ...types.SketchType) (types.SketchType, error) {
 }
 
 func gte(args ...types.SketchType) (types.SketchType, error) {
-	numbers, err := ValidateNIntArgs(">=", 2, args)
+	numbers, err := validation.NIntArgs(">=", 2, args)
 	if err != nil {
 		return nil, err
 	}

@@ -2,8 +2,6 @@
 package core
 
 import (
-	"fmt"
-
 	"github.com/jamesroutley/sketch/sketch/types"
 )
 
@@ -39,16 +37,4 @@ func init() {
 	register("rest", rest)
 	register("and", and)
 	register("or", or)
-}
-
-func ArgsToSketchInt(args []types.SketchType) ([]*types.SketchInt, error) {
-	numbers := make([]*types.SketchInt, len(args))
-	for i, arg := range args {
-		number, ok := arg.(*types.SketchInt)
-		if !ok {
-			return nil, fmt.Errorf("could not cast type to int")
-		}
-		numbers[i] = number
-	}
-	return numbers, nil
 }
