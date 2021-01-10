@@ -12,9 +12,12 @@ const SketchCode = `
   "Returns a new string made by concatenating the items in 'elements',
     placing 'separator' between each one."
   (elements separator)
-  (if
-    (empty? (rest elements)) ; I.e. strings has one item in it
-    (first elements)
+  (cond
+    (empty? elements)
+    "" ; Special behaviour if called with an empty list
+    (empty? (rest elements))
+    (first elements) ; Recursion base case
+    "else"
     (+ (first elements) separator (join (rest elements) separator))))
 
 (export-as strings (join))

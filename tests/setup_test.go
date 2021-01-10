@@ -1,8 +1,10 @@
-package sketch
+package sketchtest
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/jamesroutley/sketch/sketch"
 	"github.com/jamesroutley/sketch/sketch/evaluator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,6 +19,10 @@ type TestCase struct {
 }
 
 func runTests(t *testing.T, cases []*TestCase) {
+	runTestsWithImports(t, cases)
+}
+
+func runTestsWithImports(t *testing.T, cases []*TestCase, imports ...string) {
 	t.Helper()
 	for _, tc := range cases {
 		tc := tc
@@ -24,7 +30,13 @@ func runTests(t *testing.T, cases []*TestCase) {
 			t.Parallel()
 			env, err := evaluator.RootEnvironment()
 			require.NoError(t, err)
-			actual, err := Rep(tc.input, env)
+
+			for _, module := range imports {
+				_, err := sketch.Rep(fmt.Sprintf(`(import "%s")`, module), env)
+				require.NoError(t, err)
+			}
+
+			actual, err := sketch.Rep(tc.input, env)
 			if tc.expectedError != nil {
 				// TODO: assert on error message
 				assert.Error(t, err)
@@ -34,6 +46,4 @@ func runTests(t *testing.T, cases []*TestCase) {
 			assert.Equal(t, tc.expected, actual)
 		})
 	}
-	t.Parallel()
-
 }

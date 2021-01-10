@@ -1,3 +1,5 @@
+// Package reader implements Sketch's reader - the component which converts raw
+// source code into an AST.
 package reader
 
 import (
@@ -145,46 +147,22 @@ func ReadAtom(reader *Reader) (types.SketchType, error) {
 		}, nil
 	}
 
+	// Expand module lookup symbols into the `module-lookup` function.
+	// E.g: strings.join -> (module-lookup strings join)
+	if strings.Contains(token, ".") {
+		parts := strings.SplitN(token, ".", 2)
+		return &types.SketchList{
+			Items: []types.SketchType{
+				&types.SketchSymbol{Value: "module-lookup"},
+				&types.SketchSymbol{Value: parts[0]},
+				&types.SketchSymbol{Value: parts[1]},
+			},
+		}, nil
+	}
+
 	return &types.SketchSymbol{
 		Value: token,
 	}, nil
-}
-
-func DebugType(m types.SketchType) {
-	fmt.Println(debugType(m, 0))
-}
-
-func debugType(m types.SketchType, indent int) string {
-	switch tok := m.(type) {
-	case *types.SketchList:
-		itemStrings := make([]string, len(tok.Items))
-		for i, item := range tok.Items {
-			itemStrings[i] = debugType(item, 0)
-		}
-		return fmt.Sprintf("(%s)", strings.Join(itemStrings, " "))
-	case *types.SketchInt:
-		return fmt.Sprintf("int:%d ", tok.Value)
-	case *types.SketchSymbol:
-		return fmt.Sprintf("symbol:`%s` ", tok.Value)
-	case *types.SketchFunction:
-		return "#<function>"
-	case *types.SketchBoolean:
-		if tok.Value {
-			return "boolean:true"
-		}
-		return "boolean:false"
-	case *types.SketchNil:
-		return "nil"
-	default:
-		return tok.String()
-	}
-}
-
-func DebugTokens(s string) {
-	tokens := Tokenize(s)
-	for _, tok := range tokens {
-		fmt.Printf("`%s`\n", tok)
-	}
 }
 
 func stripComments(list *types.SketchList) types.SketchType {

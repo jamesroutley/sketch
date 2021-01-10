@@ -233,7 +233,7 @@ func evalImport(operator *types.SketchSymbol, args []types.SketchType, env *envi
 
 func evalExportAs(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
-	if err := validation.NArgs("export-as", 3, args); err != nil {
+	if err := validation.NArgs("export-as", 2, args); err != nil {
 		return nil, err
 	}
 	defaultName, err := validation.SymbolArg("export-as", args[0], 0)
@@ -280,7 +280,7 @@ func evalExportAs(operator *types.SketchSymbol, args []types.SketchType, env *en
 
 func evalModuleLookup(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
-	if err := validation.NArgs("module-lookup", 1, args); err != nil {
+	if err := validation.NArgs("module-lookup", 2, args); err != nil {
 		return nil, err
 	}
 	moduleName, err := validation.SymbolArg("module-lookup", args[0], 0)
