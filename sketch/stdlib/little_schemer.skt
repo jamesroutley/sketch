@@ -1,4 +1,0 @@
-(def car first)
-(def cdr rest)
-(def null? empty?)
-(defn atom? (x) (not (list? x)))

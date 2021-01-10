@@ -4,9 +4,10 @@
     "defn defines a function. It's equivalent to calling (def <name> (fn <...>))"
     (name a b & c)
     (if
-        (empty? c)
-        (quasiquote (def (unquote name) (fn (unquote a) (unquote b))))
-        (quasiquote (def (unquote name) (fn (unquote a) (unquote b) (unquote (car c))))))))
+      (empty? c)
+      (quasiquote (def (unquote name) (fn (unquote a) (unquote b))))
+      (quasiquote
+        (def (unquote name) (fn (unquote a) (unquote b) (unquote (first c))))))))
 
 (defmacro
   cond
@@ -23,3 +24,11 @@
         (first xs)
         (if (> (count xs) 1) (nth xs 1) (throw "odd number of forms to cond"))
         (cons (quote cond) (rest (rest xs)))))))
+
+(defn
+  not
+  "not returns false if the argument is truthy, else true"
+  (x)
+  (if x false true))
+
+(defn load-file (f) (eval (read-string (+ "(do " (slurp f) "\nnil)"))))

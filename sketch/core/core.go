@@ -9,13 +9,6 @@ import (
 
 var EnvironmentItems = map[string]types.SketchType{}
 
-// TODO: move to separate file and pull with go-bindata
-var SketchCode = `
-(def not (fn (a) (if a false true)))
-
-(def load-file (fn (f) (eval (read-string (+ "(do " (slurp f) "\nnil)")))))
-`
-
 func register(symbol string, f func(...types.SketchType) (types.SketchType, error)) {
 	EnvironmentItems[symbol] = &types.SketchFunction{Func: f}
 }
