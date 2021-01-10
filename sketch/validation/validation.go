@@ -45,6 +45,15 @@ func IntArg(
 	return arg.(*types.SketchInt), nil
 }
 
+func StringArg(
+	fnName string, arg types.SketchType, position int,
+) (*types.SketchString, error) {
+	if err := ArgType(fnName, arg, "string", position); err != nil {
+		return nil, err
+	}
+	return arg.(*types.SketchString), nil
+}
+
 func FunctionArg(
 	fnName string, arg types.SketchType, position int,
 ) (*types.SketchFunction, error) {
@@ -54,6 +63,15 @@ func FunctionArg(
 	return arg.(*types.SketchFunction), nil
 }
 
+func SymbolArg(
+	fnName string, arg types.SketchType, position int,
+) (*types.SketchSymbol, error) {
+	if err := ArgType(fnName, arg, "symbol", position); err != nil {
+		return nil, err
+	}
+	return arg.(*types.SketchSymbol), nil
+}
+
 func ArgType(
 	fnName string, arg types.SketchType, expectedType string, position int,
 ) error {
@@ -61,13 +79,13 @@ func ArgType(
 		oneIndexedPosition := position + 1
 		return fmt.Errorf(
 			"the function %s expects the %s argument `%s` to be type %s, got type %s",
-			fnName, toOrdinal(oneIndexedPosition), arg, expectedType, arg.Type())
+			fnName, ToOrdinal(oneIndexedPosition), arg, expectedType, arg.Type())
 	}
 	return nil
 }
 
-// toOrdinal takes an integer and returns its ordinal form - e.g. 1 -> 1st
-func toOrdinal(n int) string {
+// ToOrdinal takes an integer and returns its ordinal form - e.g. 1 -> 1st
+func ToOrdinal(n int) string {
 	lastTwoDigits := n % 100
 	switch lastTwoDigits {
 	case 11, 12, 13:

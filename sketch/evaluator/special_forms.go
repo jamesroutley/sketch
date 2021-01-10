@@ -5,6 +5,7 @@ import (
 
 	"github.com/jamesroutley/sketch/sketch/environment"
 	"github.com/jamesroutley/sketch/sketch/types"
+	"github.com/jamesroutley/sketch/sketch/validation"
 )
 
 type specialFormEvaluator func(
@@ -74,10 +75,11 @@ func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environm
 
 	// Functions can optionally have a docstring set as its first argument
 	var docstring string
-	if len(args) == 3 {
+	docstringSet := len(args) == 3
+	if docstringSet {
 		str, ok := args[0].(*types.SketchString)
 		if !ok {
-			return nil, fmt.Errorf("if a fn expression has three arguments, the first is expected to be a docstrig, with type string. Got %s", args[0].Type())
+			return nil, fmt.Errorf("if a fn expression has three arguments, the 1st should be a docstrig with type string. Got %s", args[0].Type())
 		}
 		docstring = str.Value
 		// We've processed the first argument pop it off the list for the rest
@@ -89,8 +91,13 @@ func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environm
 	// `(a)` in the example above)
 	arguments, ok := args[0].(*types.SketchList)
 	if !ok {
-		return nil, fmt.Errorf("fn statements must have a list as the first arg, got %s", args[0].Type())
+		err := fmt.Errorf("fn statements must have a list as the 1st arg, got %s", args[0].Type())
+		if docstringSet {
+			err = fmt.Errorf("fn statements must have a list as the 2nd arg, got %s", args[0].Type())
+		}
+		return nil, err
 	}
+
 	// Cast it from a list of SketchType to a list of SketchSymbol
 	binds := make([]*types.SketchSymbol, len(arguments.Items))
 	for i, a := range arguments.Items {
@@ -139,12 +146,12 @@ func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environm
 // 10
 func evalDef(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf("def takes 2 args")
+	if err := validation.NArgs("def", 2, args); err != nil {
+		return nil, err
 	}
-	key, ok := args[0].(*types.SketchSymbol)
-	if !ok {
-		return nil, fmt.Errorf("def: first arg isn't a symbol")
+	key, err := validation.SymbolArg("def", args[0], 0)
+	if err != nil {
+		return nil, err
 	}
 	value, err := Eval(args[1], env)
 	if err != nil {
@@ -156,6 +163,9 @@ func evalDef(operator *types.SketchSymbol, args []types.SketchType, env *environ
 
 func evalQuote(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
+	if err := validation.NArgs("quote", 1, args); err != nil {
+		return nil, err
+	}
 	return args[0], nil
 }
 
@@ -163,26 +173,29 @@ func evalQuote(operator *types.SketchSymbol, args []types.SketchType, env *envir
 // This macro is used to test the internal implementation of quasiquote
 func evalQuasiquoteExpand(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
+	if err := validation.NArgs("quasiquoteexpand", 1, args); err != nil {
+		return nil, err
+	}
 	return quasiquote(args[0])
 }
 
 // Creates a new macro
 func evalDefmacro(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf("defmacro takes 2 args")
+	if err := validation.NArgs("defmacro", 2, args); err != nil {
+		return nil, err
 	}
-	key, ok := args[0].(*types.SketchSymbol)
-	if !ok {
-		return nil, fmt.Errorf("defmacro: first arg isn't a symbol")
+	key, err := validation.SymbolArg("defmacro", args[0], 0)
+	if err != nil {
+		return nil, err
 	}
 	value, err := Eval(args[1], env)
 	if err != nil {
 		return nil, err
 	}
-	function, ok := value.(*types.SketchFunction)
-	if !ok {
-		return nil, fmt.Errorf("defmacro: second arg isn't a function definition")
+	function, err := validation.FunctionArg("defmacro", value, 1)
+	if err != nil {
+		return nil, err
 	}
 	function.IsMacro = true
 	env.Set(key.Value, function)
@@ -191,15 +204,21 @@ func evalDefmacro(operator *types.SketchSymbol, args []types.SketchType, env *en
 
 func evalMacroexpand(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
+	if err := validation.NArgs("macroexpand", 1, args); err != nil {
+		return nil, err
+	}
 	return macroExpand(args[0], env)
 }
 
 // evalImport imports a module.
 func evalImport(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
-	relativePath, ok := args[0].(*types.SketchString)
-	if !ok {
-		return nil, fmt.Errorf("import: first arg isn't a string")
+	if err := validation.NArgs("import", 1, args); err != nil {
+		return nil, err
+	}
+	relativePath, err := validation.StringArg("import", args[0], 0)
+	if err != nil {
+		return nil, err
 	}
 
 	module, err := importModule(relativePath.Value)
@@ -214,21 +233,26 @@ func evalImport(operator *types.SketchSymbol, args []types.SketchType, env *envi
 
 func evalExportAs(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
-	defaultName, ok := args[0].(*types.SketchSymbol)
-	if !ok {
-		return nil, fmt.Errorf("export-as: first arg isn't a symbol, got")
+	if err := validation.NArgs("export-as", 3, args); err != nil {
+		return nil, err
+	}
+	defaultName, err := validation.SymbolArg("export-as", args[0], 0)
+	if err != nil {
+		return nil, err
 	}
 
-	exports, ok := args[1].(*types.SketchList)
-	if !ok {
-		return nil, fmt.Errorf("export-as: second arg isn't a list")
+	exports, err := validation.ListArg("export-as", args[1], 1)
+	if err != nil {
+		return nil, err
 	}
 
 	var exported []string
-	for i, export := range exports.Items {
-		export, ok := export.(*types.SketchSymbol)
+	for i, item := range exports.Items {
+		export, ok := item.(*types.SketchSymbol)
 		if !ok {
-			return nil, fmt.Errorf("export-as: export %d isn't a symbol", i)
+			return nil, fmt.Errorf(
+				"the function export-as expects the second argument to be a list of symbols to export, but the %s item is type %s",
+				validation.ToOrdinal(i), item.Type())
 		}
 
 		// Check exported symbol is in the environment
@@ -256,13 +280,17 @@ func evalExportAs(operator *types.SketchSymbol, args []types.SketchType, env *en
 
 func evalModuleLookup(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, err error) {
-	moduleName, ok := args[0].(*types.SketchSymbol)
-	if !ok {
-		return nil, fmt.Errorf("module-lookup: first arg isn't a symbol")
+	if err := validation.NArgs("module-lookup", 1, args); err != nil {
+		return nil, err
 	}
-	key, ok := args[1].(*types.SketchSymbol)
-	if !ok {
-		return nil, fmt.Errorf("module-lookup: second arg isn't a symbol")
+	moduleName, err := validation.SymbolArg("module-lookup", args[0], 0)
+	if err != nil {
+		return nil, err
+	}
+
+	valueName, err := validation.SymbolArg("module-lookup", args[1], 1)
+	if err != nil {
+		return nil, err
 	}
 
 	module, err := env.Get(moduleName.Value)
@@ -275,5 +303,5 @@ func evalModuleLookup(operator *types.SketchSymbol, args []types.SketchType, env
 		return nil, fmt.Errorf("module-lookup: %s isn't a module, got %s", moduleName.Value, module.Type())
 	}
 
-	return m.Environment.Get(key.Value)
+	return m.Environment.Get(valueName.Value)
 }

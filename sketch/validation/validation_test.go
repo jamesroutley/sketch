@@ -45,7 +45,7 @@ func TestToOrdinal(t *testing.T) {
 		tc := tc
 		t.Run(fmt.Sprint(tc.n), func(t *testing.T) {
 			t.Parallel()
-			actual := toOrdinal(tc.n)
+			actual := ToOrdinal(tc.n)
 			assert.Equal(t, tc.expected, actual)
 		})
 	}
