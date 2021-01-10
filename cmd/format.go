@@ -12,8 +12,8 @@ import (
 
 // formatCmd represents the format command
 var formatCmd = &cobra.Command{
-	Use:   "format [path]",
-	Short: "Automatically formats a Sketch file",
+	Use:   "format [path]...",
+	Short: "Automatically formats Sketch files",
 	Long: `Sketchfmt is an autoformatter for the Sketch language.
 
 Sketchfmt is ultimately pragmatic. It exists to simplify development and remove
@@ -37,35 +37,35 @@ It formats with the following rules:
 
 By default, Sketchfmt prints the formatted file to stdout. You can supply the
 --write/-w flag to get Sketchfmt to write the file itself.`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		filename := args[0]
-
-		data, err := ioutil.ReadFile(filename)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		ast, err := reader.ReadStrWithComments(fmt.Sprintf("(do %s)", data))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		formatted := printer.PrettyPrintTopLevelDo(ast)
-
-		write, err := cmd.Flags().GetBool("write")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if write {
-			if err := ioutil.WriteFile(filename, []byte(formatted+"\n"), 0777); err != nil {
+		for _, filename := range args {
+			data, err := ioutil.ReadFile(filename)
+			if err != nil {
 				log.Fatal(err)
 			}
-			return
-		}
 
-		fmt.Println(formatted)
+			ast, err := reader.ReadStrWithComments(fmt.Sprintf("(do %s)", data))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			formatted := printer.PrettyPrintTopLevelDo(ast)
+
+			write, err := cmd.Flags().GetBool("write")
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if write {
+				if err := ioutil.WriteFile(filename, []byte(formatted+"\n"), 0777); err != nil {
+					log.Fatal(err)
+				}
+				continue
+			}
+
+			fmt.Println(formatted)
+		}
 	},
 }
 
