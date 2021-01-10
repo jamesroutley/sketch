@@ -2,12 +2,8 @@ package evaluator
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 
 	"github.com/jamesroutley/sketch/sketch/environment"
-	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/jamesroutley/sketch/sketch/types"
 )
 
@@ -54,8 +50,6 @@ func evalSpecialForm(
 		evaluator = evalExportAs
 	case "module-lookup":
 		evaluator = evalModuleLookup
-	case "eval1":
-		evaluator = evalEval1
 
 	default:
 		return false, nil, nil
@@ -208,50 +202,13 @@ func evalImport(operator *types.SketchSymbol, args []types.SketchType, env *envi
 		return nil, fmt.Errorf("import: first arg isn't a string")
 	}
 
-	goPath := os.Getenv("GOPATH")
-	if goPath == "" {
-		return nil, fmt.Errorf("import: $GOPATH not set")
-	}
-
-	path := filepath.Join(goPath, "src", relativePath.Value)
-
-	moduleEnv, err := RootEnvironment()
+	module, err := importModule(relativePath.Value)
 	if err != nil {
 		return nil, err
-	}
-
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	ast, err := reader.ReadStr(fmt.Sprintf(`(do %s)`, data))
-	if err != nil {
-		return nil, err
-	}
-	evaluated, err := Eval(ast, moduleEnv)
-	if err != nil {
-		if err.Error() == "read comment" {
-			return nil, fmt.Errorf("to be importable, %s must end in an `export-as` statement", relativePath)
-		}
-		return nil, err
-	}
-
-	module, ok := evaluated.(*types.SketchModule)
-	if !ok {
-		fmt.Println(evaluated.Type())
-		return nil, fmt.Errorf("to be importable, %s must end in an `export-as` statement", relativePath)
 	}
 
 	env.Set(module.DefaultName, module)
 
-	// - Locates the corresponding source code file
-	// - Evaluates it in the context of a new environment
-	// - Checks that a module is returned. This will happen if the last line in the
-	//   file is an `export-as` call. If not, error.
-	// - Binds the module to the importing environment, using `module.ExportedName`,
-	//   or the name specified in an `import-as` expression
-	// - Return the imported module. Or nil?
 	return module, nil
 }
 
@@ -259,7 +216,7 @@ func evalExportAs(operator *types.SketchSymbol, args []types.SketchType, env *en
 ) (newAST types.SketchType, err error) {
 	defaultName, ok := args[0].(*types.SketchSymbol)
 	if !ok {
-		return nil, fmt.Errorf("export-as: first arg isn't a symbol")
+		return nil, fmt.Errorf("export-as: first arg isn't a symbol, got")
 	}
 
 	exports, ok := args[1].(*types.SketchList)
@@ -301,11 +258,11 @@ func evalModuleLookup(operator *types.SketchSymbol, args []types.SketchType, env
 ) (newAST types.SketchType, err error) {
 	moduleName, ok := args[0].(*types.SketchSymbol)
 	if !ok {
-		return nil, fmt.Errorf("export-as: first arg isn't a symbol")
+		return nil, fmt.Errorf("module-lookup: first arg isn't a symbol")
 	}
 	key, ok := args[1].(*types.SketchSymbol)
 	if !ok {
-		return nil, fmt.Errorf("export-as: second arg isn't a symbol")
+		return nil, fmt.Errorf("module-lookup: second arg isn't a symbol")
 	}
 
 	module, err := env.Get(moduleName.Value)
@@ -319,10 +276,4 @@ func evalModuleLookup(operator *types.SketchSymbol, args []types.SketchType, env
 	}
 
 	return m.Environment.Get(key.Value)
-}
-
-func evalEval1(operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
-) (newAST types.SketchType, err error) {
-	fmt.Println(args[0])
-	return Eval(args[0], env)
 }

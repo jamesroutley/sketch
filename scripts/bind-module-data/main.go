@@ -12,6 +12,7 @@ import (
 
 var modules = []string{
 	"./sketch/core",
+	"./sketch/stdlib/strings",
 }
 
 type Source struct {
