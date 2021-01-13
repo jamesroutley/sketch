@@ -239,16 +239,21 @@ func filter(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	g := new(errgroup.Group)
-	filteredItems := make([]types.SketchType, 0, len(list.Items))
-	for _, item := range list.Items {
+	filteredItems := make([]types.SketchType, len(list.Items))
+	for i, item := range list.Items {
+		i := i
 		item := item
 		g.Go(func() error {
 			passed, err := function.Func(item)
 			if err != nil {
 				return err
 			}
+			// Only add item to the filtered array if it's passed the filter
+			// function. We add it back to it's original position, and we'll
+			// filter out nil values in the array later. We do this to preserve
+			// the ordering of the list
 			if IsTruthy(passed) {
-				filteredItems = append(filteredItems, item)
+				filteredItems[i] = item
 			}
 
 			return nil
@@ -258,8 +263,16 @@ func filter(args ...types.SketchType) (types.SketchType, error) {
 		return nil, err
 	}
 
+	items := make([]types.SketchType, 0, len(list.Items))
+	for _, item := range filteredItems {
+		if item == nil {
+			continue
+		}
+		items = append(items, item)
+	}
+
 	return &types.SketchList{
-		Items: filteredItems,
+		Items: items,
 	}, nil
 }
 
@@ -272,6 +285,14 @@ func first(args ...types.SketchType) (types.SketchType, error) {
 			return &types.SketchNil{}, nil
 		}
 		return arg.Items[0], nil
+	case *types.SketchString:
+		runes := []rune(arg.Value)
+		if len(runes) == 0 {
+			return &types.SketchNil{}, nil
+		}
+		return &types.SketchString{
+			Value: string(runes[0]),
+		}, nil
 	default:
 		return nil, fmt.Errorf("first arg to first must be a list, got %s %s", arg.Type(), arg.String())
 	}
@@ -286,6 +307,14 @@ func rest(args ...types.SketchType) (types.SketchType, error) {
 			return &types.SketchList{}, nil
 		}
 		return &types.SketchList{Items: arg.Items[1:]}, nil
+	case *types.SketchString:
+		runes := []rune(arg.Value)
+		if len(runes) <= 1 {
+			return &types.SketchList{}, nil
+		}
+		return &types.SketchString{
+			Value: string(runes[1:]),
+		}, nil
 	default:
 		return nil, fmt.Errorf("first arg to rest must be a list, got %s", arg.Type())
 	}
@@ -320,6 +349,27 @@ func or(args ...types.SketchType) (types.SketchType, error) {
 	}
 	return &types.SketchBoolean{
 		Value: result,
+	}, nil
+}
+
+func stringToList(args ...types.SketchType) (types.SketchType, error) {
+	if err := validation.NArgs("string-to-list", 1, args); err != nil {
+		return nil, err
+	}
+	str, err := validation.StringArg("string-to-list", args[0], 0)
+	if err != nil {
+		return nil, err
+	}
+
+	var chars []types.SketchType
+	for _, r := range str.Value {
+		chars = append(chars, &types.SketchString{
+			Value: string(r),
+		})
+	}
+
+	return &types.SketchList{
+		Items: chars,
 	}, nil
 }
 

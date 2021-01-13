@@ -2,23 +2,23 @@ package sketchtest
 
 import "testing"
 
-func TestStrings(t *testing.T) {
+func Teststring(t *testing.T) {
 	cases := []*TestCase{
 		{
-			name:     "strings.join joins strings",
-			input:    `(strings.join (list "a" "b") "-")`,
+			name:     "string.join joins strings",
+			input:    `(string.join (list "a" "b") "-")`,
 			expected: `"a-b"`,
 		},
 		{
-			name:     "strings.join returns the element if one element in list",
-			input:    `(strings.join (list "hello") "-")`,
+			name:     "string.join returns the element if one element in list",
+			input:    `(string.join (list "hello") "-")`,
 			expected: `"hello"`,
 		},
 		{
-			name:     "strings.join returns empty string for empty list",
-			input:    `(strings.join () "-")`,
+			name:     "string.join returns empty string for empty list",
+			input:    `(string.join () "-")`,
 			expected: `""`,
 		},
 	}
-	runTestsWithImports(t, cases, "strings")
+	runTestsWithImports(t, cases, "string")
 }

@@ -106,3 +106,14 @@ func gte(args ...types.SketchType) (types.SketchType, error) {
 		Value: numbers[0].Value >= numbers[1].Value,
 	}, nil
 }
+
+func modulo(args ...types.SketchType) (types.SketchType, error) {
+	numbers, err := validation.NIntArgs("modulo", 2, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.SketchInt{
+		Value: numbers[0].Value % numbers[1].Value,
+	}, nil
+}

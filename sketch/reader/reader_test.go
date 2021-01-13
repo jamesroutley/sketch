@@ -31,3 +31,20 @@ func TestReaderMacro(t *testing.T) {
 
 	runTests(t, cases)
 }
+
+func TestReadString(t *testing.T) {
+	cases := []*TestCase{
+		{
+			name:     "string",
+			input:    `"hello"`,
+			expected: sStr(`hello`),
+		},
+		{
+			name:     "string with newline",
+			input:    "\"hello\nworld\"",
+			expected: sStr("hello\nworld"),
+		},
+	}
+
+	runTests(t, cases)
+}

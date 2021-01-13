@@ -8,7 +8,8 @@ import (
 	"strings"
 
 	"github.com/jamesroutley/sketch/sketch/reader"
-	sketchstrings "github.com/jamesroutley/sketch/sketch/stdlib/strings"
+	"github.com/jamesroutley/sketch/sketch/stdlib/file"
+	"github.com/jamesroutley/sketch/sketch/stdlib/str"
 	"github.com/jamesroutley/sketch/sketch/types"
 )
 
@@ -27,7 +28,8 @@ func registerModule(name string, items map[string]types.SketchType, code string)
 }
 
 func init() {
-	registerModule("strings", sketchstrings.EnvironmentItems, sketchstrings.SketchCode)
+	registerModule("string", str.EnvironmentItems, str.SketchCode)
+	registerModule("file", file.EnvironmentItems, file.SketchCode)
 }
 
 func loadStdlibModule(name string) (*types.SketchModule, error) {
@@ -73,7 +75,6 @@ func loadStdlibModule(name string) (*types.SketchModule, error) {
 
 	module, ok := evaluated.(*types.SketchModule)
 	if !ok {
-		fmt.Println(evaluated.Type())
 		return nil, fmt.Errorf("to be importable, %s must end in an `export-as` statement", name)
 	}
 
@@ -82,13 +83,13 @@ func loadStdlibModule(name string) (*types.SketchModule, error) {
 }
 
 func importModule(path string) (*types.SketchModule, error) {
+	if _, ok := registeredModules[path]; ok {
+		return loadStdlibModule(path)
+	}
+
 	goPath := os.Getenv("GOPATH")
 	if goPath == "" {
 		return nil, fmt.Errorf("import: $GOPATH not set")
-	}
-
-	if _, ok := registeredModules[path]; ok {
-		return loadStdlibModule(path)
 	}
 
 	fullPath := filepath.Join(goPath, "src", path)
@@ -117,7 +118,6 @@ func importModule(path string) (*types.SketchModule, error) {
 
 	module, ok := evaluated.(*types.SketchModule)
 	if !ok {
-		fmt.Println(evaluated.Type())
 		return nil, fmt.Errorf("to be importable, %s must end in an `export-as` statement", path)
 	}
 

@@ -11,4 +11,4 @@
     "else"
     (+ (first elements) separator (join (rest elements) separator))))
 
-(export-as strings (join))
+(export-as string (join))

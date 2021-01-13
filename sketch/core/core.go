@@ -12,21 +12,12 @@ func register(symbol string, f func(...types.SketchType) (types.SketchType, erro
 }
 
 func init() {
-	register("+", add)
-	register("-", subtract)
-	register("*", multiply)
-	register("/", divide)
 	register("prn", prn)
 	register("list", list)
 	register("list?", isList)
 	register("empty?", isEmpty)
 	register("count", count)
 	register("nth", nth)
-	register("=", equals)
-	register("<", lt)
-	register("<=", lte)
-	register(">", gt)
-	register(">=", gte)
 	register("read-string", readString)
 	register("slurp", slurp)
 	register("cons", cons)
@@ -37,4 +28,18 @@ func init() {
 	register("rest", rest)
 	register("and", and)
 	register("or", or)
+	register("string-to-list", stringToList)
+
+	register("int", integer)
+
+	register("+", add)
+	register("-", subtract)
+	register("*", multiply)
+	register("/", divide)
+	register("=", equals)
+	register("<", lt)
+	register("<=", lte)
+	register(">", gt)
+	register(">=", gte)
+	register("modulo", modulo)
 }

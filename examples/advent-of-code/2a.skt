@@ -1,0 +1,31 @@
+(import "file")
+(import "string")
+
+(defn get-lower (l) (nth l 0))
+(defn get-upper (l) (nth l 1))
+(defn get-needle (l) (nth l 2))
+(defn get-password (l) (nth l 3))
+
+(defn length (l) (if (empty? l) 0 (+ 1 (length (rest l)))))
+
+(defn count-occurances (needle haystack)
+    (length (filter (fn (item) (= needle item)) haystack)))
+
+(defn parse-line "returns a 3-item list" (line)
+    (let (
+        number-range (first (string.split line " "))
+        lower (int (first (string.split number-range "-")))
+        upper (int (nth (string.split number-range "-") 1))
+        needle (first (nth (string.split line " ") 1))
+        password (first (rest (rest (string.split line " ")))))
+        (list lower upper needle password)))
+
+(defn valid (row)
+    (let (occurances (count-occurances (get-needle row) (string-to-list (get-password row))))
+    (and (>= occurances (get-lower row)) (<= occurances (get-upper row)))))
+
+(def lines (file.read-lines "./examples/advent-of-code/input/2a.txt"))
+
+(def rows (map parse-line lines))
+
+(prn (length (filter valid rows)))
