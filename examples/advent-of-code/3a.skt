@@ -1,0 +1,35 @@
+(import "file")
+
+(import "string")
+
+(def
+  lines
+  ((module-lookup file read-lines)
+    "./examples/advent-of-code/input/3a-test.txt"))
+
+(def grid (map (fn (line) ((module-lookup string split) line "")) lines))
+
+(def y-max (- (length grid) 1))
+
+(def x-len (length (first grid)))
+
+(def x-max (- (length (first grid)) 1))
+
+(def x-movement 3)
+
+(def y-movement 1)
+
+(defn tree? (x y) (let (square (nth (nth grid y) x)) (= square "#")))
+
+(defn
+  count-trees
+  (xpos ypos)
+  (cond
+    (= ypos y-max)
+    (if (tree? xpos ypos) 1 0) ; exit condition
+    (tree? xpos ypos)
+    (+ 1 (count-trees (modulo (+ xpos x-movement) x-len) (+ ypos y-movement)))
+    "else"
+    (count-trees (modulo (+ xpos x-movement) x-len) (+ ypos y-movement))))
+
+(prn (count-trees 0 0))
