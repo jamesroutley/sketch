@@ -12,10 +12,6 @@ func PrStr(t types.SketchType) string {
 	return t.String()
 }
 
-func PrettyPrint(ast types.SketchType) string {
-	return ast.PrettyPrint(0)
-}
-
 // When reading a program from a file, we implicitly wrap it in a (do ...)
 // expression. When printing that (unevaluated) program AST, we don't want to
 // include the (do) expression. This prints the ast, removing a top level `do`
