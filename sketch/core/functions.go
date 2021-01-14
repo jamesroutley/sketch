@@ -68,6 +68,12 @@ func nth(args ...types.SketchType) (types.SketchType, error) {
 		return nil, err
 	}
 
+	if n.Value >= len(list.Items) {
+		return nil, fmt.Errorf(
+			"nth: index out of range - %d, with length %d", n.Value, len(list.Items),
+		)
+	}
+
 	return list.Items[n.Value], nil
 }
 
@@ -370,6 +376,27 @@ func stringToList(args ...types.SketchType) (types.SketchType, error) {
 
 	return &types.SketchList{
 		Items: chars,
+	}, nil
+}
+
+func length(args ...types.SketchType) (types.SketchType, error) {
+	if err := validation.NArgs("length", 1, args); err != nil {
+		return nil, err
+	}
+
+	itemLength := 0
+	switch arg := args[0].(type) {
+	case *types.SketchList:
+		itemLength = len(arg.Items)
+	case *types.SketchString:
+		runes := []rune(arg.Value)
+		itemLength = len(runes)
+	default:
+		return nil, fmt.Errorf("length called with type %s, only supports list and string", arg.Type())
+	}
+
+	return &types.SketchInt{
+		Value: itemLength,
 	}, nil
 }
 

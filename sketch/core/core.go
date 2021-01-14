@@ -29,6 +29,7 @@ func init() {
 	register("and", and)
 	register("or", or)
 	register("string-to-list", stringToList)
+	register("length", length)
 
 	register("int", integer)
 
