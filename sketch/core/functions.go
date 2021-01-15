@@ -138,7 +138,7 @@ func readString(args ...types.SketchType) (types.SketchType, error) {
 		return nil, fmt.Errorf("read-string takes a string")
 	}
 
-	return reader.ReadStr(arg.Value)
+	return reader.Read(arg.Value)
 }
 
 func slurp(args ...types.SketchType) (types.SketchType, error) {

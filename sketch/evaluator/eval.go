@@ -22,7 +22,7 @@ func RootEnvironment() (*environment.Env, error) {
 	if core.SketchCode == "" {
 		return env, nil
 	}
-	ast, err := reader.ReadStr(fmt.Sprintf("(do %s)", core.SketchCode))
+	ast, err := reader.Read(fmt.Sprintf("(do %s)", core.SketchCode))
 	if err != nil {
 		return nil, err
 	}

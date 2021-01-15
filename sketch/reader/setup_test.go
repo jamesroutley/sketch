@@ -41,7 +41,7 @@ func runTests(t *testing.T, cases []*TestCase) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			actual, err := ReadStrWithComments(tc.input)
+			actual, err := Read(tc.input)
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.expected, actual)

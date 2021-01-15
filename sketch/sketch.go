@@ -19,7 +19,7 @@ func RunFile(filename string) error {
 		return err
 	}
 
-	ast, err := reader.ReadStr(fmt.Sprintf("(do %s)", data))
+	ast, err := reader.Read(fmt.Sprintf("(do %s)", data))
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func Repl() error {
 
 // Rep - read, evaluate, print
 func Rep(s string, env *environment.Env) (string, error) {
-	ast, err := reader.ReadStr(s)
+	ast, err := reader.Read(s)
 	if err != nil {
 		return "", err
 	}

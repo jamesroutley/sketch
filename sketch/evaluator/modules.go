@@ -61,7 +61,7 @@ func loadStdlibModule(name string) (*types.SketchModule, error) {
 		}, nil
 	}
 	// Pull the exported module from any Sketch code
-	ast, err := reader.ReadStr(fmt.Sprintf("(do %s)", rawModule.SketchCode))
+	ast, err := reader.Read(fmt.Sprintf("(do %s)", rawModule.SketchCode))
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func importModule(path string) (*types.SketchModule, error) {
 		return nil, err
 	}
 
-	ast, err := reader.ReadStr(fmt.Sprintf(`(do %s)`, data))
+	ast, err := reader.Read(fmt.Sprintf(`(do %s)`, data))
 	if err != nil {
 		return nil, err
 	}

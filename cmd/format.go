@@ -45,7 +45,7 @@ By default, Sketchfmt prints the formatted file to stdout. You can supply the
 				log.Fatal(err)
 			}
 
-			ast, err := reader.ReadStrWithComments(fmt.Sprintf("(do %s)", data))
+			ast, err := reader.ReadWithoutReaderMacros(fmt.Sprintf("(do %s)", data))
 			if err != nil {
 				log.Fatal(err)
 			}

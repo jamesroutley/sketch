@@ -38,25 +38,26 @@ func (r *Reader) Next() (string, error) {
 	return current, nil
 }
 
-func ReadStr(s string) (types.SketchType, error) {
-	ast, err := ReadStrWithComments(s)
+func Read(s string) (types.SketchType, error) {
+	ast, err := ReadWithoutReaderMacros(s)
 	if err != nil {
 		return nil, err
 	}
-	switch castAST := ast.(type) {
-	case *types.SketchComment:
-		// If the read line is a comment, return empty string. This means
-		// we don't print anything in the REPL
+
+	if _, ok := ast.(*types.SketchComment); ok {
+		// If the read line is a comment, return this magic error which the
+		// REPL catches to not print anything.
 		return nil, fmt.Errorf("read comment")
-	case *types.SketchList:
-		ast = stripComments(castAST)
-	default:
-		// continue
+
 	}
+
+	// Reader macros
+	ast = stripComments2(ast)
+	ast = expandModuleLookup(ast)
 	return ast, nil
 }
 
-func ReadStrWithComments(s string) (types.SketchType, error) {
+func ReadWithoutReaderMacros(s string) (types.SketchType, error) {
 	tokens := Tokenize(s)
 	reader := NewReader(tokens)
 	return ReadForm(reader)
@@ -144,19 +145,6 @@ func ReadAtom(reader *Reader) (types.SketchType, error) {
 
 		return &types.SketchString{
 			Value: strings.Trim(token, `"`),
-		}, nil
-	}
-
-	// Expand module lookup symbols into the `module-lookup` function.
-	// E.g: strings.join -> (module-lookup strings join)
-	if strings.Contains(token, ".") {
-		parts := strings.SplitN(token, ".", 2)
-		return &types.SketchList{
-			Items: []types.SketchType{
-				&types.SketchSymbol{Value: "module-lookup"},
-				&types.SketchSymbol{Value: parts[0]},
-				&types.SketchSymbol{Value: parts[1]},
-			},
 		}, nil
 	}
 

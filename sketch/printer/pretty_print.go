@@ -38,8 +38,6 @@ func prettyPrintList(list *types.SketchList, indent int) string {
 		return list.String()
 	}
 
-	// Reverse module-lookup reader macro
-
 	containsComment := false
 	for _, item := range items {
 		if item.Type() == "comment" {
@@ -85,6 +83,7 @@ func prettyPrintList(list *types.SketchList, indent int) string {
 	return b.String()
 }
 
+// TODO: switch to tabs
 func getIndent(indent int) string {
 	return strings.Repeat("  ", indent)
 }
