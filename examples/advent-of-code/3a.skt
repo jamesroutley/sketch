@@ -1,13 +1,9 @@
 (import "file")
-
 (import "string")
 
-(def
-  lines
-  ((module-lookup file read-lines)
-    "./examples/advent-of-code/input/3a-test.txt"))
+(def lines (file.read-lines "./examples/advent-of-code/input/3a-test.txt"))
 
-(def grid (map (fn (line) ((module-lookup string split) line "")) lines))
+(def grid (map (fn (line) (string.split line "")) lines))
 
 (def y-max (- (length grid) 1))
 
