@@ -15,6 +15,7 @@ func register(symbol string, f func(...types.SketchType) (types.SketchType, erro
 
 func init() {
 	register("split", split)
+	register("fields", fields)
 }
 
 func split(args ...types.SketchType) (types.SketchType, error) {
@@ -39,6 +40,27 @@ func split(args ...types.SketchType) (types.SketchType, error) {
 		items[i] = &types.SketchString{
 			Value: item,
 		}
+	}
+
+	return &types.SketchList{
+		Items: items,
+	}, nil
+}
+
+func fields(args ...types.SketchType) (types.SketchType, error) {
+	if err := validation.NArgs("fields", 1, args); err != nil {
+		return nil, err
+	}
+
+	s, err := validation.StringArg("fields", args[0], 0)
+	if err != nil {
+		return nil, err
+	}
+
+	fields := strings.Fields(s.Value)
+	items := make([]types.SketchType, len(fields))
+	for i, field := range fields {
+		items[i] = &types.SketchString{Value: field}
 	}
 
 	return &types.SketchList{

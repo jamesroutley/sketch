@@ -1,0 +1,93 @@
+(import "file")
+(import "string")
+
+(defn row-char (char) (cond (= char "F") true (= char "B") true "else" false))
+
+(defn col-char (char) (cond (= char "L") true (= char "R") true "else" false))
+
+(defn
+  parse-row
+  (line)
+  (filter row-char ((module-lookup string split) line "")))
+
+(defn
+  parse-col
+  (line)
+  (filter col-char ((module-lookup string split) line "")))
+
+(defn
+  get-row
+  (row)
+  (do
+    (defn
+      get-row-recur
+      "Gets the row specified by the parsed row 'row'. This works like binary
+      search."
+      (row lower upper)
+      (cond
+        (empty? row)
+        lower
+        "else"
+        (let
+          ((dist (- upper lower))
+            (half-dist (/ dist 2))
+            (half-point (+ lower half-dist)))
+          (if
+            (= (first row) "F")
+            (get-row-recur (rest row) lower half-point)
+            (get-row-recur (rest row) half-point upper)))))
+    (get-row-recur row 0 128)))
+
+(defn
+  get-col
+  (col)
+  (do
+    (defn
+      get-col-recur
+      "Gets the col specified by the parsed col 'col'. This works like binary
+      search."
+      (col lower upper)
+      (cond
+        (empty? col)
+        lower
+        "else"
+        (let
+          ((dist (- upper lower))
+            (half-dist (/ dist 2))
+            (half-point (+ lower half-dist)))
+          (if
+            (= (first col) "L")
+            (get-col-recur (rest col) lower half-point)
+            (get-col-recur (rest col) half-point upper)))))
+    (get-col-recur col 0 8)))
+
+(defn
+  max
+  (nums)
+  (do
+    (defn
+      max-iter
+      (nums maximum)
+      (cond
+        (empty? nums)
+        maximum
+        (> (first nums) maximum)
+        (max-iter (rest nums) (first nums))
+        "else"
+        (max-iter (rest nums) maximum)))
+    (max-iter nums 0)))
+
+(defn
+  score
+  (line)
+  (let
+    ((row (get-row (parse-row line))) (col (get-col (parse-col line))))
+    (+ (* row 8) col)))
+
+(def
+  lines
+  ((module-lookup file read-lines) "./examples/advent-of-code/input/5a.txt"))
+
+(def scores (map score lines))
+
+(prn (max scores))

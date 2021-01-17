@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
@@ -37,8 +38,24 @@ It formats with the following rules:
 
 By default, Sketchfmt prints the formatted file to stdout. You can supply the
 --write/-w flag to get Sketchfmt to write the file itself.`,
-	Args: cobra.MinimumNArgs(1),
+	// Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Read from stdin
+		if len(args) == 0 {
+			data, err := ioutil.ReadAll(os.Stdin)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			ast, err := reader.ReadWithoutReaderMacros(fmt.Sprintf("(do %s)", data))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			formatted := printer.PrettyPrintTopLevelDo(ast)
+			fmt.Println(formatted)
+		}
+
 		for _, filename := range args {
 			data, err := ioutil.ReadFile(filename)
 			if err != nil {

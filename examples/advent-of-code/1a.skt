@@ -20,12 +20,12 @@
   sum2020?
   (x coll)
   (let
-    (filtered (filter (fn (y) (= (+ x y) 2020)) coll))
+    ((filtered (filter (fn (y) (= (+ x y) 2020)) coll)))
     (if (empty? filtered) false (list x (first filtered)))))
 
 (defn any-sum-2020? (a b)
     (let
-        (filtered (filter (fn (x) (sum2020? x b)) a))
+        ((filtered (filter (fn (x) (sum2020? x b)) a)))
         filtered))
 
 (def pair (any-sum-2020? input input))

@@ -15,7 +15,7 @@
 
 (def y-movement 1)
 
-(defn tree? (x y) (let (square (nth (nth grid y) x)) (= square "#")))
+(defn tree? (x y) (let ((square (nth (nth grid y) x))) (= square "#")))
 
 (defn
   count-trees

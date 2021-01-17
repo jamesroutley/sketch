@@ -1,0 +1,32 @@
+(import "file")
+(import "string")
+
+(defn
+  parse-record
+  "Returns a list of field names"
+  (raw-record)
+  (let
+    ((fields (string.fields raw-record)))
+    (map (fn (field) (first (string.split field ":"))) fields)))
+
+(defn required-field (field) (cond (= field "cid") false "else" true))
+
+(defn filter-record (record) (filter required-field record))
+
+(defn
+  valid-record
+  (record)
+  (do
+    (def parsed-record (parse-record record))
+    (def filtered-record (filter-record parsed-record))
+    (= 7 (length filtered-record))))
+
+(def f (file.read-all "./examples/advent-of-code/input/4a.txt"))
+
+(def raw-records (string.split f "
+
+"))
+
+(def valid-records (filter valid-record raw-records))
+
+(prn (length valid-records))

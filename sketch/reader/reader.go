@@ -142,6 +142,9 @@ func ReadAtom(reader *Reader) (types.SketchType, error) {
 		if !strings.HasSuffix(token, `"`) {
 			return nil, fmt.Errorf("unclosed string")
 		}
+		token = strings.Trim(token, `"`)
+		// Replace the literal characters 'slash n' with a newline
+		token = strings.Replace(token, `\n`, "\n", -1)
 
 		return &types.SketchString{
 			Value: strings.Trim(token, `"`),
@@ -151,22 +154,4 @@ func ReadAtom(reader *Reader) (types.SketchType, error) {
 	return &types.SketchSymbol{
 		Value: token,
 	}, nil
-}
-
-func stripComments(list *types.SketchList) types.SketchType {
-	var newItems []types.SketchType
-	for _, item := range list.Items {
-		switch item := item.(type) {
-		case *types.SketchComment:
-			// skip
-		case *types.SketchList:
-			newItem := stripComments(item)
-			newItems = append(newItems, newItem)
-		default:
-			newItems = append(newItems, item)
-		}
-	}
-
-	list.Items = newItems
-	return list
 }

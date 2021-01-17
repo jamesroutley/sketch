@@ -6,6 +6,7 @@ import (
 	"github.com/jamesroutley/sketch/sketch/core"
 	"github.com/jamesroutley/sketch/sketch/environment"
 	"github.com/jamesroutley/sketch/sketch/types"
+	"github.com/jamesroutley/sketch/sketch/validation"
 )
 
 // TODO: none of the evaluators use the `operator` param at the moment. It's
@@ -66,34 +67,64 @@ func evalTCOSpecialForm(
 // statement in that environment.
 // e.g:
 //
-// > (let (a 1 b (+ a 1)) b)
+// > (let ((a 1) (b (+ a 1))) b)
 // 2 ; a == b, b == a+1 == 2
 func evalLet(
 	operator *types.SketchSymbol, args []types.SketchType, env *environment.Env,
 ) (newAST types.SketchType, newEnv *environment.Env, err error) {
-	if len(args) != 2 {
-		return nil, nil, fmt.Errorf("let takes 2 args")
+	if err := validation.NArgs("let", 2, args); err != nil {
+		return nil, nil, err
 	}
-	bindingList, ok := args[0].(*types.SketchList)
-	if !ok {
-		return nil, nil, fmt.Errorf("let: first arg isn't a list")
+	bindingList, err := validation.ListArg("let", args[0], 0)
+	if err != nil {
+		return nil, nil, err
 	}
-	if len(bindingList.Items)%2 != 0 {
-		return nil, nil, fmt.Errorf("let: first arg doesn't have an even number of items")
-	}
+	// if len(bindingList.Items)%2 != 0 {
+	// 	return nil, nil, fmt.Errorf("let: first arg doesn't have an even number of items")
+	// }
 
 	childEnv := env.ChildEnv()
-	for i := 0; i < len(bindingList.Items); i += 2 {
-		key, ok := bindingList.Items[i].(*types.SketchSymbol)
+	for i, item := range bindingList.Items {
+		pair, ok := item.(*types.SketchList)
 		if !ok {
-			return nil, nil, fmt.Errorf("let: binding list: arg %d isn't a symbol", i)
+			err := fmt.Errorf(
+				"let: the %s binding list item isn't a list, got %s",
+				validation.ToOrdinal(i), item.Type(),
+			)
+			return nil, nil, err
 		}
-		value, err := Eval(bindingList.Items[i+1], childEnv)
+
+		if len(pair.Items) != 2 {
+			err := fmt.Errorf(
+				"let: the %s binding list item doesn't contain two items",
+				validation.ToOrdinal(i),
+			)
+			return nil, nil, err
+		}
+
+		key, ok := pair.Items[0].(*types.SketchSymbol)
+		if !ok {
+			return nil, nil, fmt.Errorf("let: the %s binding list item's first arg isn't a symbol", validation.ToOrdinal(i))
+		}
+		value, err := Eval(pair.Items[1], childEnv)
 		if err != nil {
 			return nil, nil, err
 		}
 		childEnv.Set(key.Value, value)
 	}
+
+	// childEnv := env.ChildEnv()
+	// for i := 0; i < len(bindingList.Items); i += 2 {
+	// 	key, ok := bindingList.Items[i].(*types.SketchSymbol)
+	// 	if !ok {
+	// 		return nil, nil, fmt.Errorf("let: binding list: arg %d isn't a symbol", i)
+	// 	}
+	// 	value, err := Eval(bindingList.Items[i+1], childEnv)
+	// 	if err != nil {
+	// 		return nil, nil, err
+	// 	}
+	// 	childEnv.Set(key.Value, value)
+	// }
 
 	// Finally, return the last arg as the new AST to be evaluated, and the
 	// newly constructed env as the environment

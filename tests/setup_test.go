@@ -19,6 +19,7 @@ type TestCase struct {
 }
 
 func runTests(t *testing.T, cases []*TestCase) {
+	t.Helper()
 	runTestsWithImports(t, cases)
 }
 

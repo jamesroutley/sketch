@@ -37,6 +37,11 @@ func TestRead_Strings(t *testing.T) {
 			input:    "\"hello\nworld\"",
 			expected: sStr("hello\nworld"),
 		},
+		{
+			name:     "newline",
+			input:    `"\n"`,
+			expected: sStr("\n"),
+		},
 	}
 
 	runTests(t, cases)

@@ -9,14 +9,14 @@ func TestSpecialForm_Let(t *testing.T) {
 	cases := []*TestCase{
 		{
 			name:     "let creates a new environment, with variables bound",
-			input:    "(let (c 2) 2)",
+			input:    "(let ((c 2)) 2)",
 			expected: "2",
 		},
 		{
 			name: "bound variables aren't defined outside let",
 			input: `
 (do
-	(let (c 2) 2)
+	(let ((c 2)) 2)
 	c)`,
 			expectedError: errors.New("`c` is undefined"),
 		},

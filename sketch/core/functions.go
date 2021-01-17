@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"reflect"
+	"strings"
 
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
@@ -14,7 +15,11 @@ import (
 )
 
 func prn(args ...types.SketchType) (types.SketchType, error) {
-	fmt.Println(printer.PrStr(args[0]))
+	ss := make([]string, len(args))
+	for i, arg := range args {
+		ss[i] = printer.PrStr(arg)
+	}
+	fmt.Println(strings.Join(ss, " "))
 	return &types.SketchNil{}, nil
 }
 
