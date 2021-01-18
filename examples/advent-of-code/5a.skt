@@ -1,9 +1,15 @@
 (import "file")
 (import "string")
 
-(defn row-char (char) (cond (= char "F") true (= char "B") true "else" false))
+(defn
+  row-char
+  (char)
+  (cond ((= char "F") true) ((= char "B") true) ("else" false)))
 
-(defn col-char (char) (cond (= char "L") true (= char "R") true "else" false))
+(defn
+  col-char
+  (char)
+  (cond ((= char "L") true) ((= char "R") true) ("else" false)))
 
 (defn
   parse-row
@@ -25,17 +31,16 @@
       search."
       (row lower upper)
       (cond
-        (empty? row)
-        lower
-        "else"
-        (let
-          ((dist (- upper lower))
-            (half-dist (/ dist 2))
-            (half-point (+ lower half-dist)))
-          (if
-            (= (first row) "F")
-            (get-row-recur (rest row) lower half-point)
-            (get-row-recur (rest row) half-point upper)))))
+        ((empty? row) lower)
+        ("else"
+          (let
+            ((dist (- upper lower))
+              (half-dist (/ dist 2))
+              (half-point (+ lower half-dist)))
+            (if
+              (= (first row) "F")
+              (get-row-recur (rest row) lower half-point)
+              (get-row-recur (rest row) half-point upper))))))
     (get-row-recur row 0 128)))
 
 (defn
@@ -48,17 +53,16 @@
       search."
       (col lower upper)
       (cond
-        (empty? col)
-        lower
-        "else"
-        (let
-          ((dist (- upper lower))
-            (half-dist (/ dist 2))
-            (half-point (+ lower half-dist)))
-          (if
-            (= (first col) "L")
-            (get-col-recur (rest col) lower half-point)
-            (get-col-recur (rest col) half-point upper)))))
+        ((empty? col) lower)
+        ("else"
+          (let
+            ((dist (- upper lower))
+              (half-dist (/ dist 2))
+              (half-point (+ lower half-dist)))
+            (if
+              (= (first col) "L")
+              (get-col-recur (rest col) lower half-point)
+              (get-col-recur (rest col) half-point upper))))))
     (get-col-recur col 0 8)))
 
 (defn
@@ -69,12 +73,9 @@
       max-iter
       (nums maximum)
       (cond
-        (empty? nums)
-        maximum
-        (> (first nums) maximum)
-        (max-iter (rest nums) (first nums))
-        "else"
-        (max-iter (rest nums) maximum)))
+        ((empty? nums) maximum)
+        ((> (first nums) maximum) (max-iter (rest nums) (first nums)))
+        ("else" (max-iter (rest nums) maximum))))
     (max-iter nums 0)))
 
 (defn

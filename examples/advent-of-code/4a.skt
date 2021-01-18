@@ -9,7 +9,7 @@
     ((fields (string.fields raw-record)))
     (map (fn (field) (first (string.split field ":"))) fields)))
 
-(defn required-field (field) (cond (= field "cid") false "else" true))
+(defn required-field (field) (cond ((= field "cid") false) ("else" true)))
 
 (defn filter-record (record) (filter required-field record))
 

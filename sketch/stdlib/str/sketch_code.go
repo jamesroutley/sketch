@@ -13,12 +13,9 @@ const SketchCode = `
     placing 'separator' between each one."
   (elements separator)
   (cond
-    (empty? elements)
-    "" ; Special behaviour if called with an empty list
-    (empty? (rest elements))
-    (first elements) ; Recursion base case
-    "else"
-    (+ (first elements) separator (join (rest elements) separator))))
+    ((empty? elements) "") ; Special behaviour if called with an empty list
+    ((empty? (rest elements)) (first elements)) ; Recursion base case
+    ("else" (+ (first elements) separator (join (rest elements) separator)))))
 
 (export-as string (join))
 `

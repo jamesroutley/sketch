@@ -21,18 +21,20 @@ const SketchCode = `
 (defmacro
   cond
   (fn
-    "cond takes an even number of arguments, and evaluates each two as a pair.
+    "cond takes a list of lists, and evaluates each list as a pair.
     It checks whether the first of the pair evaluates to true, and if so,
     returns the result of the second. If false, it continues down the pairs of
     arguments."
     (& xs)
     (if
       (> (count xs) 0)
-      (list
-        (quote if)
-        (first xs)
-        (if (> (count xs) 1) (nth xs 1) (throw "odd number of forms to cond"))
-        (cons (quote cond) (rest (rest xs)))))))
+      (let
+        ((pair (first xs))) ; (prn pair)
+        (list
+          (quote if)
+          (first pair)
+          (nth pair 1)
+          (cons (quote cond) (rest xs)))))))
 
 (defn
   not
@@ -40,5 +42,6 @@ const SketchCode = `
   (x)
   (if x false true))
 
-(defn load-file (f) (eval (read-string (+ "(do " (slurp f) "\nnil)"))))
+(defn load-file (f) (eval (read-string (+ "(do " (slurp f) "
+nil)"))))
 `

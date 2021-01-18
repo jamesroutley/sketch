@@ -44,3 +44,24 @@ func TestMap(t *testing.T) {
 	}
 	runTests(t, cases)
 }
+
+func TestCond(t *testing.T) {
+	cases := []*TestCase{
+		{
+			name:     "empty cond",
+			input:    "(macroexpand (cond))",
+			expected: "nil",
+		},
+		{
+			name:     "cond with two cases",
+			input:    "(macroexpand (cond (false 1) (true 2)))",
+			expected: "(if false 1 (cond (true 2)))",
+		},
+		{
+			name:     "cond with two cases",
+			input:    "(cond (false 1) (true 2))",
+			expected: "2",
+		},
+	}
+	runTests(t, cases)
+}

@@ -21,11 +21,12 @@
   count-trees
   (xpos ypos)
   (cond
-    (= ypos y-max)
-    (if (tree? xpos ypos) 1 0) ; exit condition
-    (tree? xpos ypos)
-    (+ 1 (count-trees (modulo (+ xpos x-movement) x-len) (+ ypos y-movement)))
-    "else"
-    (count-trees (modulo (+ xpos x-movement) x-len) (+ ypos y-movement))))
+    ((= ypos y-max) (if (tree? xpos ypos) 1 0)) ; exit condition
+    ((tree? xpos ypos)
+      (+
+        1
+        (count-trees (modulo (+ xpos x-movement) x-len) (+ ypos y-movement))))
+    ("else"
+      (count-trees (modulo (+ xpos x-movement) x-len) (+ ypos y-movement)))))
 
 (prn (count-trees 0 0))
