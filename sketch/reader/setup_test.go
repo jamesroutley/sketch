@@ -33,6 +33,17 @@ func sComment(val string) *types.SketchComment {
 	return &types.SketchComment{Value: val}
 }
 
+func sHashMap(vals ...types.SketchType) *types.SketchHashMap {
+	m, err := types.NewSketchHashMap(vals)
+	if err != nil {
+		// Not ideal to panic, but I like not having to pass a *testing.T into
+		// this constructor
+		panic(err)
+	}
+
+	return m
+}
+
 func runTests(t *testing.T, cases []*TestCase) {
 	t.Helper()
 

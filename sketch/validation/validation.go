@@ -72,6 +72,15 @@ func SymbolArg(
 	return arg.(*types.SketchSymbol), nil
 }
 
+func HashMapArg(
+	fnName string, arg types.SketchType, position int,
+) (*types.SketchHashMap, error) {
+	if err := ArgType(fnName, arg, "hashmap", position); err != nil {
+		return nil, err
+	}
+	return arg.(*types.SketchHashMap), nil
+}
+
 func ArgType(
 	fnName string, arg types.SketchType, expectedType string, position int,
 ) error {

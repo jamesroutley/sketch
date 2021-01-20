@@ -61,6 +61,23 @@ func TestRead_Comments(t *testing.T) {
 	runTests(t, cases)
 }
 
+func TestRead_HashMap(t *testing.T) {
+	cases := []*TestCase{
+		{
+			name:     "hash map with two items",
+			input:    `{a b}`,
+			expected: sHashMap(sSym("a"), sSym("b")),
+		},
+		{
+			name:     "lists can be keys",
+			input:    `{(a b) c}`,
+			expected: sHashMap(sList(sSym("a"), sSym("b")), sSym("c")),
+		},
+	}
+
+	runTests(t, cases)
+}
+
 func TestReadWithoutReaderMacros(t *testing.T) {
 	cases := []*TestCase{
 		{

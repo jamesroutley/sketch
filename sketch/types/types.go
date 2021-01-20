@@ -35,6 +35,72 @@ func (l *SketchList) Type() string {
 	return "list"
 }
 
+type hashMapValue struct {
+	key   SketchType
+	value SketchType
+}
+
+type SketchHashMap struct {
+	// TODO: make this private
+	Items map[string]*hashMapValue
+}
+
+func NewSketchHashMap(items []SketchType) (*SketchHashMap, error) {
+	if numArgs := len(items); numArgs%2 != 0 {
+		return nil, fmt.Errorf("maps must be instantiated with an even number of arguments, got %d", numArgs)
+	}
+
+	mapItems := map[string]*hashMapValue{}
+	for i := 0; i < len(items); i += 2 {
+		key := items[i]
+		value := items[i+1]
+
+		if err := ValidHashMapKey(key); err != nil {
+			return nil, err
+		}
+
+		hashMakKey := key.Type() + key.String()
+		mapItems[hashMakKey] = &hashMapValue{
+			key:   key,
+			value: value,
+		}
+	}
+
+	return &SketchHashMap{
+		Items: mapItems,
+	}, nil
+}
+
+func (m *SketchHashMap) String() string {
+	var items []string
+	// TODO: stabilize print order
+	for _, value := range m.Items {
+		items = append(items, value.key.String(), value.value.String())
+	}
+	return fmt.Sprintf("{%s}", strings.Join(items, " "))
+}
+
+func (m *SketchHashMap) Type() string {
+	return "hashmap"
+}
+
+func (m *SketchHashMap) Set(key, value SketchType) *SketchHashMap {
+	mapItems := map[string]*hashMapValue{}
+	for k, v := range m.Items {
+		mapItems[k] = v
+	}
+
+	hashMakKey := key.Type() + key.String()
+	mapItems[hashMakKey] = &hashMapValue{
+		key:   key,
+		value: value,
+	}
+
+	return &SketchHashMap{
+		Items: mapItems,
+	}
+}
+
 type SketchInt struct {
 	Value int
 }

@@ -77,6 +77,13 @@ func ReadForm(reader *Reader) (types.SketchType, error) {
 			return nil, err
 		}
 		return ReadList(reader)
+	case "{":
+		// Increment the position pointer
+		_, err = reader.Next()
+		if err != nil {
+			return nil, err
+		}
+		return ReadHashMap(reader)
 	default:
 		return ReadAtom(reader)
 	}
@@ -99,6 +106,30 @@ func ReadList(reader *Reader) (types.SketchType, error) {
 			return &types.SketchList{
 				Items: items,
 			}, nil
+		}
+		item, err := ReadForm(reader)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+}
+
+func ReadHashMap(reader *Reader) (types.SketchType, error) {
+	var items []types.SketchType
+	for {
+		// TODO: error case when we hit file without closing bracket
+		tok, err := reader.Peek()
+		if err != nil {
+			return nil, err
+		}
+		if tok == "}" {
+			// Increment the position pointer
+			_, err := reader.Next()
+			if err != nil {
+				return nil, err
+			}
+			return types.NewSketchHashMap(items)
 		}
 		item, err := ReadForm(reader)
 		if err != nil {

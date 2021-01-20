@@ -43,4 +43,6 @@ func init() {
 	register(">", gt)
 	register(">=", gte)
 	register("modulo", modulo)
+
+	register("hashmap-set", hashMapSet)
 }
