@@ -90,8 +90,8 @@ func (m *SketchHashMap) Set(key, value SketchType) *SketchHashMap {
 		mapItems[k] = v
 	}
 
-	hashMakKey := key.Type() + key.String()
-	mapItems[hashMakKey] = &hashMapValue{
+	hashMapKey := key.Type() + key.String()
+	mapItems[hashMapKey] = &hashMapValue{
 		key:   key,
 		value: value,
 	}
@@ -99,6 +99,34 @@ func (m *SketchHashMap) Set(key, value SketchType) *SketchHashMap {
 	return &SketchHashMap{
 		Items: mapItems,
 	}
+}
+
+func (m *SketchHashMap) Get(key SketchType) (SketchType, error) {
+	if err := ValidHashMapKey(key); err != nil {
+		return nil, err
+	}
+
+	hashMapKey := key.Type() + key.String()
+	val, ok := m.Items[hashMapKey]
+	if !ok {
+		return nil, fmt.Errorf("map doesn't contain key %s", key)
+	}
+
+	return val.value, nil
+}
+
+func (m *SketchHashMap) Keys() (keys []SketchType) {
+	for _, value := range m.Items {
+		keys = append(keys, value.key)
+	}
+	return keys
+}
+
+func (m *SketchHashMap) Values() (values []SketchType) {
+	for _, value := range m.Items {
+		values = append(values, value.value)
+	}
+	return values
 }
 
 type SketchInt struct {

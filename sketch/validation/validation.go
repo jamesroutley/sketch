@@ -13,6 +13,14 @@ func NArgs(fnName string, n int, args []types.SketchType) error {
 	return nil
 }
 
+func NArgsRange(fnName string, lower, upper int, args []types.SketchType) error {
+	numArgs := len(args)
+	if numArgs < lower || numArgs > upper {
+		return fmt.Errorf("the function %s expects between %d and %d arguments, but got %d", fnName, lower, upper, numArgs)
+	}
+	return nil
+}
+
 func NIntArgs(fnName string, n int, args []types.SketchType) ([]*types.SketchInt, error) {
 	if err := NArgs(fnName, n, args); err != nil {
 		return nil, err

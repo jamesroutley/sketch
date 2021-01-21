@@ -45,4 +45,7 @@ func init() {
 	register("modulo", modulo)
 
 	register("hashmap-set", hashMapSet)
+	register("hashmap-get", hashMapGet)
+	register("hashmap-keys", hashMapKeys)
+	register("hashmap-values", hashMapValues)
 }
