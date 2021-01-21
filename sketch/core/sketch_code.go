@@ -51,4 +51,20 @@ nil)"))))
   (let
     ((initial (function (first collection) (nth collection 1))))
     (fold-left function initial (rest (rest collection)))))
+
+(defn
+  max
+  (collection)
+  (if
+    (= (length collection) 1)
+    (first collection)
+    (reduce (fn (a b) (if (> a b) a b)) collection)))
+
+(defn
+  min
+  (collection)
+  (if
+    (= (length collection) 1)
+    (first collection)
+    (reduce (fn (a b) (if (< a b) a b)) collection)))
 `

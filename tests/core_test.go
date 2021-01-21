@@ -65,3 +65,35 @@ func TestCond(t *testing.T) {
 	}
 	runTests(t, cases)
 }
+
+func TestCore(t *testing.T) {
+	cases := []*TestCase{
+		{
+			name:     "min",
+			input:    "(min (list 0 1 2 3 4))",
+			expected: "0",
+		},
+		{
+			name:     "min negative",
+			input:    "(min (list -1 4))",
+			expected: "-1",
+		},
+		{
+			name:     "min one item in list",
+			input:    "(min (list 4))",
+			expected: "4",
+		},
+
+		{
+			name:     "max",
+			input:    "(max (list -1 4))",
+			expected: "4",
+		},
+		{
+			name:     "max one item in list",
+			input:    "(max (list 4))",
+			expected: "4",
+		},
+	}
+	runTests(t, cases)
+}
