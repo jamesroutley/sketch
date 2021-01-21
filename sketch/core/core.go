@@ -22,8 +22,6 @@ func init() {
 	register("slurp", slurp)
 	register("cons", cons)
 	register("concat", concat)
-	register("map", sketchMap)
-	register("filter", filter)
 	register("first", first)
 	register("rest", rest)
 	register("and", and)
@@ -48,4 +46,8 @@ func init() {
 	register("hashmap-get", hashMapGet)
 	register("hashmap-keys", hashMapKeys)
 	register("hashmap-values", hashMapValues)
+
+	register("map", sketchMap)
+	register("filter", filter)
+	register("fold-left", foldLeft)
 }

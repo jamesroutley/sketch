@@ -44,4 +44,11 @@ const SketchCode = `
 
 (defn load-file (f) (eval (read-string (+ "(do " (slurp f) "
 nil)"))))
+
+(defn
+  reduce
+  (function collection)
+  (let
+    ((initial (function (first collection) (nth collection 1))))
+    (fold-left function initial (rest (rest collection)))))
 `
