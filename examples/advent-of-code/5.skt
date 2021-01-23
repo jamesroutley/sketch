@@ -66,19 +66,6 @@
     (get-col-recur col 0 8)))
 
 (defn
-  max
-  (nums)
-  (do
-    (defn
-      max-iter
-      (nums maximum)
-      (cond
-        ((empty? nums) maximum)
-        ((> (first nums) maximum) (max-iter (rest nums) (first nums)))
-        ("else" (max-iter (rest nums) maximum))))
-    (max-iter nums 0)))
-
-(defn
   score
   (line)
   (let
@@ -91,4 +78,13 @@
 
 (def scores (map score lines))
 
+; Part A
 (prn (max scores))
+
+(def scores-set (apply hashset scores))
+
+(defn seat-empty (seat) (not (hashset-get scores-set seat)))
+
+(def my-seat (filter seat-empty (range (min scores) (add1 (max scores)))))
+
+(prn my-seat)

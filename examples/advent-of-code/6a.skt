@@ -1,0 +1,29 @@
+(import "file")
+(import "string")
+
+(defn
+  dedupe
+  "dedupes a list by converting it to a set and back"
+  (l)
+  (hashmap-keys (apply hashset l)))
+
+(defn
+  parse-answers
+  "returns deduplicated answers for a group"
+  (raw)
+  (let
+    ((all-answers (filter (fn (x) (not (= x "
+"))) (string.split raw ""))))
+    (dedupe all-answers)))
+
+(def f (file.read-all "./examples/advent-of-code/input/6a.txt"))
+
+(def groups (string.split f "
+
+"))
+
+(def group-answers (map parse-answers groups))
+
+(def score (reduce + (map length group-answers)))
+
+(prn score)
