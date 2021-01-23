@@ -312,6 +312,24 @@ func length(args ...types.SketchType) (types.SketchType, error) {
 	}, nil
 }
 
+// apply
+// (apply + (list 1 2 3)) is equivalent to (+ 1 2 3)
+func apply(args ...types.SketchType) (types.SketchType, error) {
+	if err := validation.NArgs("apply", 2, args); err != nil {
+		return nil, err
+	}
+	function, err := validation.FunctionArg("apply", args[0], 0)
+	if err != nil {
+		return nil, err
+	}
+	list, err := validation.ListArg("apply", args[1], 1)
+	if err != nil {
+		return nil, err
+	}
+
+	return function.Func(list.Items...)
+}
+
 // func list(args ...types.SketchType) (types.SketchType, error) {
 // }
 

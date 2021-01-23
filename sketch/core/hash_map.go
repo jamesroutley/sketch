@@ -7,6 +7,10 @@ import (
 	"github.com/jamesroutley/sketch/sketch/validation"
 )
 
+func hashMap(args ...types.SketchType) (types.SketchType, error) {
+	return types.NewSketchHashMap(args)
+}
+
 func hashMapSet(args ...types.SketchType) (types.SketchType, error) {
 	if err := validation.NArgs("hashmap-set", 3, args); err != nil {
 		return nil, err

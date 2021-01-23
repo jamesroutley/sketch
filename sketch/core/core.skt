@@ -58,3 +58,14 @@ nil)"))))
     (= (length collection) 1)
     (first collection)
     (reduce (fn (a b) (if (< a b) a b)) collection)))
+
+(defn
+  hashset
+  (& items)
+  (apply hashmap (flatten (map (fn (item) (list item true)) items))))
+
+(defn hashset-get (set key) (hashmap-get set key false))
+
+(defn add1 (n) (+ n 1))
+
+(defn sub1 (n) (- n 1))

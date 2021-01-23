@@ -94,6 +94,46 @@ func TestCore(t *testing.T) {
 			input:    "(max (list 4))",
 			expected: "4",
 		},
+
+		{
+			name:     "apply",
+			input:    "(apply + (list 1 2 3 4))",
+			expected: "10",
+		},
+
+		{
+			name:     "flatten",
+			input:    "(flatten (list 1 2 (list 3 (list 4 5))))",
+			expected: "(1 2 3 4 5)",
+		},
+
+		{
+			name:     "hashset",
+			input:    "(hashset 1 2 3)",
+			expected: "{1 true 2 true 3 true}",
+		},
+
+		{
+			name:     "hashset-get: found",
+			input:    "(hashset-get (hashset 1) 1)",
+			expected: "true",
+		},
+		{
+			name:     "hashset-get: not found",
+			input:    "(hashset-get (hashset 1) 2)",
+			expected: "false",
+		},
+
+		{
+			name:     "range: one arg",
+			input:    "(range 5)",
+			expected: "(0 1 2 3 4)",
+		},
+		{
+			name:     "range: two args",
+			input:    "(range -2 3)",
+			expected: "(-2 -1 0 1 2)",
+		},
 	}
 	runTests(t, cases)
 }

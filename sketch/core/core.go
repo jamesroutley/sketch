@@ -42,6 +42,9 @@ func init() {
 	register(">=", gte)
 	register("modulo", modulo)
 
+	register("apply", apply)
+
+	register("hashmap", hashMap)
 	register("hashmap-set", hashMapSet)
 	register("hashmap-get", hashMapGet)
 	register("hashmap-keys", hashMapKeys)
@@ -50,4 +53,6 @@ func init() {
 	register("map", sketchMap)
 	register("filter", filter)
 	register("fold-left", foldLeft)
+	register("flatten", flatten)
+	register("range", sketchRange)
 }

@@ -124,3 +124,70 @@ func foldLeft(args ...types.SketchType) (types.SketchType, error) {
 
 	return collector, nil
 }
+
+func flatten(args ...types.SketchType) (types.SketchType, error) {
+	list, err := validation.ListArg("flatten", args[0], 0)
+	if err != nil {
+		return nil, err
+	}
+
+	flattened := flattenRecur(list.Items)
+
+	return &types.SketchList{
+		Items: flattened,
+	}, nil
+}
+
+func flattenRecur(items []types.SketchType) []types.SketchType {
+	var flattened []types.SketchType
+	for _, item := range items {
+		l, ok := item.(*types.SketchList)
+		if ok {
+			flattened = append(flattened, flattenRecur(l.Items)...)
+			continue
+		}
+
+		flattened = append(flattened, item)
+	}
+	return flattened
+}
+
+// (range 5) => (0 1 2 3 4)
+// (range 1 5) => (1 2 3 4)
+func sketchRange(args ...types.SketchType) (types.SketchType, error) {
+	if err := validation.NArgsRange("range", 1, 2, args); err != nil {
+		return nil, err
+	}
+
+	var lower, upper int
+
+	switch len(args) {
+	case 1:
+		lower = 0
+		rawUpper, err := validation.IntArg("range", args[0], 0)
+		if err != nil {
+			return nil, err
+		}
+		upper = rawUpper.Value
+	case 2:
+		rawLower, err := validation.IntArg("range", args[0], 0)
+		if err != nil {
+			return nil, err
+		}
+		rawUpper, err := validation.IntArg("range", args[1], 1)
+		if err != nil {
+			return nil, err
+		}
+		lower = rawLower.Value
+		upper = rawUpper.Value
+	}
+
+	var items []types.SketchType
+	for i := lower; i < upper; i++ {
+		items = append(items, &types.SketchInt{Value: i})
+	}
+
+	return &types.SketchList{
+		Items: items,
+	}, nil
+}
