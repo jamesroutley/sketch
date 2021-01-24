@@ -75,6 +75,8 @@ nil)"))))
 
 (defn hashset-get (set key) (hashmap-get set key false))
 
+(defn hashset-add (set key) (hashmap-set set key true))
+
 (defn add1 (n) (+ n 1))
 
 (defn sub1 (n) (- n 1))

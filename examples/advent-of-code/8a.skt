@@ -1,0 +1,39 @@
+(import "file")
+(import "string")
+
+(defn
+  parse-line
+  (line)
+  (let
+    ((split (string.split line " ")))
+    (list (first split) (int (second split)))))
+
+(defn
+  interpret-recur
+  "Returns the accululator value when an instruction is processed for the
+  second time (indicating an infinite loop). Fuction loops through recursion -
+  all state is passed into the function, and the next iteration is a recursive
+  call with new parameters"
+  (instrs pointer accum visited)
+  (let
+    ((instruction (nth instrs pointer))
+      (operation (first instruction))
+      (argument (second instruction))
+      (new-visited (hashset-add visited pointer)))
+    (cond
+      ((hashset-get visited pointer) accum)
+      ((= operation "nop")
+        (interpret-recur instrs (add1 pointer) accum new-visited))
+      ((= operation "acc")
+        (interpret-recur instrs (add1 pointer) (+ accum argument) new-visited))
+      ((= operation "jmp")
+        (interpret-recur instrs (+ pointer argument) accum new-visited))
+      ("else" "error"))))
+
+(defn interpret (instrs) (interpret-recur instrs 0 0 (hashset)))
+
+(def lines (file.read-lines "./examples/advent-of-code/input/8a.txt"))
+
+(def instructions (map parse-line lines))
+
+(prn (interpret instructions))

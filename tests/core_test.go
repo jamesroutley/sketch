@@ -139,6 +139,12 @@ func TestCore(t *testing.T) {
 			input:    "(range -2 3)",
 			expected: "(-2 -1 0 1 2)",
 		},
+
+		{
+			name:     "explicit positive integer conversion",
+			input:    `(int "+1")`,
+			expected: "1",
+		},
 	}
 	runTests(t, cases)
 }
