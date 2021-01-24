@@ -202,6 +202,22 @@ func evalAST(ast types.SketchType, env *environment.Env) (types.SketchType, erro
 		return &types.SketchList{
 			Items: items,
 		}, nil
+	case *types.SketchHashMap:
+		keys := tok.Keys()
+		items := make([]types.SketchType, 0, len(keys)*2)
+		for _, key := range keys {
+			value, err := tok.Get(key)
+			if err != nil {
+				// This is bad
+				panic(err)
+			}
+			evaluated, err := Eval(value, env)
+			if err != nil {
+				return nil, err
+			}
+			items = append(items, key, evaluated)
+		}
+		return types.NewSketchHashMap(items)
 	}
 	return ast, nil
 }
