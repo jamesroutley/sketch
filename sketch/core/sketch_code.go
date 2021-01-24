@@ -78,4 +78,22 @@ nil)"))))
 (defn add1 (n) (+ n 1))
 
 (defn sub1 (n) (- n 1))
+
+(defn
+  for-each
+  (procedure collection)
+  (if
+    (empty? collection)
+    nil
+    (do (procedure (first collection)) (for-each procedure (rest collection)))))
+
+(defn second (l) (nth l 1))
+
+(defn
+  dedupe
+  "Removes duplicate items from a list. It does this by converting it to a
+    hashmap and back, so the list can only contain items that can be a hashmap
+    key"
+  (l)
+  (hashmap-keys (apply hashset l)))
 `

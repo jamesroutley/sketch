@@ -9,6 +9,7 @@ import (
 
 	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/jamesroutley/sketch/sketch/stdlib/file"
+	"github.com/jamesroutley/sketch/sketch/stdlib/regex"
 	"github.com/jamesroutley/sketch/sketch/stdlib/str"
 	"github.com/jamesroutley/sketch/sketch/types"
 )
@@ -30,6 +31,7 @@ func registerModule(name string, items map[string]types.SketchType, code string)
 func init() {
 	registerModule("string", str.EnvironmentItems, str.SketchCode)
 	registerModule("file", file.EnvironmentItems, file.SketchCode)
+	registerModule("regex", regex.EnvironmentItems, regex.SketchCode)
 }
 
 func loadStdlibModule(name string) (*types.SketchModule, error) {

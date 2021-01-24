@@ -1,0 +1,59 @@
+(import "file")
+(import "regex")
+
+(defn
+  parse-rule
+  "Returns a list of hashmaps, where each hashmap corresponds to one
+    container relationship expressed in the rule"
+  (rule)
+  (let
+    ((parsed (regex.find "(\w+ \w+) bag" rule))
+      (bags (map second parsed))
+      (container (first bags))
+      (contained (rest bags)))
+    (map (fn (c) {"container" container "contained" c}) contained)))
+
+(defn
+  contained-by
+  "Returns a hashmap of strings -> hashset which show all the bags colours
+    that can contain a particular bag colour"
+  (rules hmap)
+  (if
+    (empty? rules)
+    hmap
+    (let
+      ((rule (first rules))
+        (contained (hashmap-get rule "contained"))
+        (container (hashmap-get rule "container"))
+        (existing (hashmap-get hmap contained (list))))
+      (contained-by
+        (rest rules)
+        (hashmap-set hmap contained (cons container existing))))))
+
+(defn
+  find-containers-recur
+  (colour rules)
+  (let
+    ((containers (hashmap-get rules colour false)))
+    (if
+      (= false containers)
+      (list)
+      (flatten
+        (list
+          containers
+          (map (fn (col) (find-containers-recur col rules)) containers))))))
+
+(defn
+  find-containers
+  (colour rules)
+  (dedupe (find-containers-recur colour rules)))
+
+(def raw-rules (file.read-lines "./examples/advent-of-code/input/7a.txt"))
+
+(def rules (flatten (map parse-rule raw-rules)))
+
+(def containment-rules (contained-by rules {}))
+
+(def containers (find-containers "shiny gold" containment-rules))
+
+(prn (length containers))

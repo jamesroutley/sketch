@@ -15,8 +15,6 @@ func register(symbol string, f func(...types.SketchType) (types.SketchType, erro
 	EnvironmentItems[symbol] = &types.SketchFunction{Func: f}
 }
 
-var SketchCode = ""
-
 func init() {
 	register("read-all", readAll)
 	register("read-lines", readLines)

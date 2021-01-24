@@ -112,6 +112,11 @@ func TestCore(t *testing.T) {
 			input:    "(hashset 1 2 3)",
 			expected: "{1 true 2 true 3 true}",
 		},
+		{
+			name:     "empty hashset",
+			input:    "(hashset)",
+			expected: "{}",
+		},
 
 		{
 			name:     "hashset-get: found",
