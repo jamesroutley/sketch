@@ -61,7 +61,7 @@ func NewFunctionEnv(parent *Env, parameters []*types.SketchSymbol, arguments []t
 
 			collectorSymbol := collectorSymbols[0]
 			env.Set(collectorSymbol.Value, &types.SketchList{
-				Items: arguments[i:],
+				List: types.NewList(arguments[i:]),
 			})
 			return env, nil
 		}

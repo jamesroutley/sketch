@@ -76,7 +76,7 @@ func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) 
 			//
 			// (these cryptic symbols indicate that what you'd see on the REPL when
 			// evaluating an empty list)
-			if len(list.Items) == 0 {
+			if list.List.Length() == 0 {
 				return ast, nil
 			}
 		}
@@ -154,19 +154,19 @@ func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) 
 				return nil, fmt.Errorf("list did not evaluate to a list")
 			}
 
-			function, ok := list.Items[0].(*types.SketchFunction)
+			function, ok := list.List.First().(*types.SketchFunction)
 			if !ok {
-				return nil, fmt.Errorf("Error evaluating list %s. I expected the first item in the list to be a function, but it's a %s.", list, list.Items[0].Type())
+				return nil, fmt.Errorf("Error evaluating list %s. I expected the first item in the list to be a function, but it's a %s.", list, list.List.First().Type())
 			}
 
 			if !function.TailCallOptimised {
-				return function.Func(list.Items[1:]...)
+				return function.Func(list.List.Rest().ToSlice()...)
 			}
 
 			// Function is tail call optimised.
 			// Construct the correct environment it should be run in
 			childEnv, err := environment.NewFunctionEnv(
-				function.Env.(*environment.Env), function.Params, list.Items[1:],
+				function.Env.(*environment.Env), function.Params, list.List.Rest().ToSlice(),
 			)
 			if err != nil {
 				return nil, err
@@ -191,16 +191,17 @@ func evalAST(ast types.SketchType, env *environment.Env) (types.SketchType, erro
 		}
 		return value, nil
 	case *types.SketchList:
-		items := make([]types.SketchType, len(tok.Items))
-		for i, item := range tok.Items {
+		items := tok.List.ToSlice()
+		newItems := make([]types.SketchType, len(items))
+		for i, item := range items {
 			evaluated, err := Eval(item, env)
 			if err != nil {
 				return nil, err
 			}
-			items[i] = evaluated
+			newItems[i] = evaluated
 		}
 		return &types.SketchList{
-			Items: items,
+			List: types.NewList(newItems),
 		}, nil
 	case *types.SketchHashMap:
 		keys := tok.Keys()

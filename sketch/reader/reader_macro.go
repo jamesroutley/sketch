@@ -12,7 +12,7 @@ func stripComments2(ast types.SketchType) types.SketchType {
 		return ast
 	}
 	var newItems []types.SketchType
-	for _, item := range list.Items {
+	for _, item := range list.List.ToSlice() {
 		switch item := item.(type) {
 		case *types.SketchComment:
 			// skip
@@ -24,8 +24,9 @@ func stripComments2(ast types.SketchType) types.SketchType {
 		}
 	}
 
-	list.Items = newItems
-	return list
+	return &types.SketchList{
+		List: types.NewList(newItems),
+	}
 }
 
 func expandModuleLookup(ast types.SketchType) types.SketchType {
@@ -37,18 +38,28 @@ func expandModuleLookup(ast types.SketchType) types.SketchType {
 		if strings.Contains(symbol, ".") {
 			parts := strings.SplitN(symbol, ".", 2)
 			return &types.SketchList{
-				Items: []types.SketchType{
+				List: types.NewList([]types.SketchType{
 					&types.SketchSymbol{Value: "module-lookup"},
 					&types.SketchSymbol{Value: parts[0]},
 					&types.SketchSymbol{Value: parts[1]},
-				},
+				}),
 			}
 		}
 	case *types.SketchList:
-		for i, item := range ast.Items {
-			ast.Items[i] = expandModuleLookup(item)
+		// TODO I think we can make this faster by mutating the list, rather
+		// than duplicating it
+		var newItems []types.SketchType
+		for _, item := range ast.List.ToSlice() {
+			newItems = append(newItems, expandModuleLookup(item))
 		}
-		return ast
+		return &types.SketchList{
+			List: types.NewList(newItems),
+		}
+
+		// for i, item := range ast.Items {
+		// 	ast.Items[i] = expandModuleLookup(item)
+		// }
+		// return ast
 	}
 	return ast
 }

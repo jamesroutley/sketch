@@ -63,7 +63,7 @@ func hashMapKeys(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchList{
-		Items: hashmap.Keys(),
+		List: types.NewList(hashmap.Keys()),
 	}, nil
 }
 
@@ -78,6 +78,6 @@ func hashMapValues(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchList{
-		Items: hashmap.Values(),
+		List: types.NewList(hashmap.Values()),
 	}, nil
 }

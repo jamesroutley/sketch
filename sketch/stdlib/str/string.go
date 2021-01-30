@@ -43,7 +43,7 @@ func split(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchList{
-		Items: items,
+		List: types.NewList(items),
 	}, nil
 }
 
@@ -64,6 +64,6 @@ func fields(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchList{
-		Items: items,
+		List: types.NewList(items),
 	}, nil
 }

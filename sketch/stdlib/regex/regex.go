@@ -33,19 +33,20 @@ func find(args ...types.SketchType) (types.SketchType, error) {
 	}
 	found := re.FindAllStringSubmatch(str.Value, -1)
 
-	matches := &types.SketchList{
-		Items: []types.SketchType{},
-	}
+	var matches []types.SketchType
 	for _, f := range found {
-		match := &types.SketchList{
-			Items: []types.SketchType{},
-		}
+		var matchItems []types.SketchType
 		for _, m := range f {
-			match.Items = append(match.Items, &types.SketchString{
+			matchItems = append(matchItems, &types.SketchString{
 				Value: m,
 			})
 		}
-		matches.Items = append(matches.Items, match)
+		// matches.Items = append(matches.Items, match)
+		matches = append(matches, &types.SketchList{
+			List: types.NewList(matchItems),
+		})
 	}
-	return matches, nil
+	return &types.SketchList{
+		List: types.NewList(matches),
+	}, nil
 }

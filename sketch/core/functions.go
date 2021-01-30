@@ -24,7 +24,7 @@ func prn(args ...types.SketchType) (types.SketchType, error) {
 
 func list(args ...types.SketchType) (types.SketchType, error) {
 	return &types.SketchList{
-		Items: args,
+		List: types.NewList(args),
 	}, nil
 }
 
@@ -42,7 +42,7 @@ func isEmpty(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchBoolean{
-		Value: len(list.Items) == 0,
+		Value: list.List.Empty(),
 	}, nil
 }
 
@@ -58,7 +58,7 @@ func count(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchInt{
-		Value: len(list.Items),
+		Value: list.List.Length(),
 	}, nil
 }
 
@@ -72,13 +72,15 @@ func nth(args ...types.SketchType) (types.SketchType, error) {
 		return nil, err
 	}
 
-	if n.Value >= len(list.Items) {
+	items := list.List.ToSlice()
+
+	if n.Value >= len(items) {
 		return nil, fmt.Errorf(
-			"nth: index out of range - %d, with length %d", n.Value, len(list.Items),
+			"nth: index out of range - %d, with length %d", n.Value, len(items),
 		)
 	}
 
-	return list.Items[n.Value], nil
+	return items[n.Value], nil
 }
 
 func equals(args ...types.SketchType) (types.SketchType, error) {
@@ -99,12 +101,14 @@ func equalsInternal(aa types.SketchType, bb types.SketchType) bool {
 	switch a := aa.(type) {
 	case *types.SketchList:
 		b := bb.(*types.SketchList)
-		if len(a.Items) != len(b.Items) {
+		aSlice := a.List.ToSlice()
+		bSlice := b.List.ToSlice()
+		if len(aSlice) != len(bSlice) {
 			return false
 		}
 
-		for i := range a.Items {
-			if !equalsInternal(a.Items[i], b.Items[i]) {
+		for i := range aSlice {
+			if !equalsInternal(aSlice[i], bSlice[i]) {
 				return false
 			}
 		}
@@ -169,9 +173,8 @@ func cons(args ...types.SketchType) (types.SketchType, error) {
 	if !ok {
 		return nil, fmt.Errorf("cons takes a list as its second argument")
 	}
-	items := append([]types.SketchType{args[0]}, list.Items...)
 	return &types.SketchList{
-		Items: items,
+		List: list.List.Conj(args[0]),
 	}, nil
 }
 
@@ -186,11 +189,11 @@ func concat(args ...types.SketchType) (types.SketchType, error) {
 		if !ok {
 			return nil, fmt.Errorf("concat takes lists as arguments")
 		}
-		allItems = append(allItems, list.Items...)
+		allItems = append(allItems, list.List.ToSlice()...)
 	}
 
 	return &types.SketchList{
-		Items: allItems,
+		List: types.NewList(allItems),
 	}, nil
 }
 
@@ -199,10 +202,7 @@ func first(args ...types.SketchType) (types.SketchType, error) {
 	case *types.SketchNil:
 		return arg, nil
 	case *types.SketchList:
-		if len(arg.Items) == 0 {
-			return &types.SketchNil{}, nil
-		}
-		return arg.Items[0], nil
+		return arg.List.First(), nil
 	case *types.SketchString:
 		runes := []rune(arg.Value)
 		if len(runes) == 0 {
@@ -219,16 +219,15 @@ func first(args ...types.SketchType) (types.SketchType, error) {
 func rest(args ...types.SketchType) (types.SketchType, error) {
 	switch arg := args[0].(type) {
 	case *types.SketchNil:
-		return &types.SketchList{}, nil
+		return &types.SketchList{List: types.NewEmptyList()}, nil
 	case *types.SketchList:
-		if len(arg.Items) == 0 {
-			return &types.SketchList{}, nil
-		}
-		return &types.SketchList{Items: arg.Items[1:]}, nil
+		return &types.SketchList{
+			List: arg.List.Rest(),
+		}, nil
 	case *types.SketchString:
 		runes := []rune(arg.Value)
 		if len(runes) <= 1 {
-			return &types.SketchList{}, nil
+			return &types.SketchList{List: types.NewEmptyList()}, nil
 		}
 		return &types.SketchString{
 			Value: string(runes[1:]),
@@ -287,7 +286,7 @@ func stringToList(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchList{
-		Items: chars,
+		List: types.NewList(chars),
 	}, nil
 }
 
@@ -299,7 +298,7 @@ func length(args ...types.SketchType) (types.SketchType, error) {
 	itemLength := 0
 	switch arg := args[0].(type) {
 	case *types.SketchList:
-		itemLength = len(arg.Items)
+		itemLength = arg.List.Length()
 	case *types.SketchString:
 		runes := []rune(arg.Value)
 		itemLength = len(runes)
@@ -327,7 +326,7 @@ func apply(args ...types.SketchType) (types.SketchType, error) {
 		return nil, err
 	}
 
-	return function.Func(list.Items...)
+	return function.Func(list.List.ToSlice()...)
 }
 
 // func list(args ...types.SketchType) (types.SketchType, error) {

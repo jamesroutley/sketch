@@ -104,7 +104,7 @@ func ReadList(reader *Reader) (types.SketchType, error) {
 				return nil, err
 			}
 			return &types.SketchList{
-				Items: items,
+				List: types.NewList(items),
 			}, nil
 		}
 		item, err := ReadForm(reader)

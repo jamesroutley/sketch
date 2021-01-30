@@ -18,7 +18,7 @@ type TestCase struct {
 // terser to hand write ASTs
 
 func sList(items ...types.SketchType) *types.SketchList {
-	return &types.SketchList{Items: items}
+	return &types.SketchList{List: types.NewList(items)}
 }
 
 func sSym(val string) *types.SketchSymbol {
@@ -31,6 +31,10 @@ func sStr(val string) *types.SketchString {
 
 func sComment(val string) *types.SketchComment {
 	return &types.SketchComment{Value: val}
+}
+
+func sInt(val int) *types.SketchInt {
+	return &types.SketchInt{Value: val}
 }
 
 func sHashMap(vals ...types.SketchType) *types.SketchHashMap {

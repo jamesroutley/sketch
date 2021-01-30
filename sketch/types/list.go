@@ -13,15 +13,15 @@ type List struct {
 
 // NewEmptyList returns a new empty list.
 func NewEmptyList() *List {
-	return &List{}
+	return NewList(nil)
 }
 
 // NewList creates a new list, containing the specified items. The items in the
 // list appear in the same order as they appear as parameters, so l.First() ==
 // items[0].
-func NewList(items ...SketchType) *List {
+func NewList(items []SketchType) *List {
 	var previousNode *listNode
-	for i := len(items) - 1; i >= 0; i++ {
+	for i := len(items) - 1; i >= 0; i-- {
 		node := &listNode{
 			item: items[i],
 			next: previousNode,
@@ -84,4 +84,18 @@ func (l *List) Length() int {
 		node = node.next
 	}
 	return length
+}
+
+// ToSlice returns the items in the list as a Golang slice. This function isn't
+// intended to be exposed to Sketch users, but simplifies language-level
+// processing somewhat, because Go has better support for slices than linked
+// lists.
+func (l *List) ToSlice() []SketchType {
+	var items []SketchType
+	node := l.head
+	for node != nil {
+		items = append(items, node.item)
+		node = node.next
+	}
+	return items
 }

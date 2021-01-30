@@ -17,14 +17,16 @@ func sketchMap(args ...types.SketchType) (types.SketchType, error) {
 		return nil, err
 	}
 
+	items := list.List.ToSlice()
+
 	// Short circuit
-	if len(list.Items) == 0 {
+	if len(items) == 0 {
 		return list, nil
 	}
 
 	g := new(errgroup.Group)
-	mappedItems := make([]types.SketchType, len(list.Items))
-	for i, item := range list.Items {
+	mappedItems := make([]types.SketchType, len(items))
+	for i, item := range items {
 		i := i
 		item := item
 		g.Go(func() error {
@@ -41,7 +43,7 @@ func sketchMap(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchList{
-		Items: mappedItems,
+		List: types.NewList(mappedItems),
 	}, nil
 }
 
@@ -55,14 +57,16 @@ func filter(args ...types.SketchType) (types.SketchType, error) {
 		return nil, err
 	}
 
+	items := list.List.ToSlice()
+
 	// Short circuit
-	if len(list.Items) == 0 {
+	if len(items) == 0 {
 		return list, nil
 	}
 
 	g := new(errgroup.Group)
-	filteredItems := make([]types.SketchType, len(list.Items))
-	for i, item := range list.Items {
+	filteredItems := make([]types.SketchType, len(items))
+	for i, item := range items {
 		i := i
 		item := item
 		g.Go(func() error {
@@ -85,16 +89,16 @@ func filter(args ...types.SketchType) (types.SketchType, error) {
 		return nil, err
 	}
 
-	items := make([]types.SketchType, 0, len(list.Items))
+	filtered := make([]types.SketchType, 0, len(items))
 	for _, item := range filteredItems {
 		if item == nil {
 			continue
 		}
-		items = append(items, item)
+		filtered = append(filtered, item)
 	}
 
 	return &types.SketchList{
-		Items: items,
+		List: types.NewList(filtered),
 	}, nil
 }
 
@@ -114,7 +118,7 @@ func foldLeft(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	collector := args[1]
-	for _, item := range list.Items {
+	for _, item := range list.List.ToSlice() {
 		result, err := function.Func(collector, item)
 		if err != nil {
 			return nil, err
@@ -131,10 +135,10 @@ func flatten(args ...types.SketchType) (types.SketchType, error) {
 		return nil, err
 	}
 
-	flattened := flattenRecur(list.Items)
+	flattened := flattenRecur(list.List.ToSlice())
 
 	return &types.SketchList{
-		Items: flattened,
+		List: types.NewList(flattened),
 	}, nil
 }
 
@@ -143,7 +147,7 @@ func flattenRecur(items []types.SketchType) []types.SketchType {
 	for _, item := range items {
 		l, ok := item.(*types.SketchList)
 		if ok {
-			flattened = append(flattened, flattenRecur(l.Items)...)
+			flattened = append(flattened, flattenRecur(l.List.ToSlice())...)
 			continue
 		}
 
@@ -188,6 +192,6 @@ func sketchRange(args ...types.SketchType) (types.SketchType, error) {
 	}
 
 	return &types.SketchList{
-		Items: items,
+		List: types.NewList(items),
 	}, nil
 }

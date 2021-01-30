@@ -19,7 +19,7 @@ func evalSpecialForm(
 	if !ok {
 		return false, nil, nil
 	}
-	items := tok.Items
+	items := tok.List.ToSlice()
 	if len(items) == 0 {
 		return false, nil, nil
 	}
@@ -99,8 +99,8 @@ func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environm
 	}
 
 	// Cast it from a list of SketchType to a list of SketchSymbol
-	binds := make([]*types.SketchSymbol, len(arguments.Items))
-	for i, a := range arguments.Items {
+	binds := make([]*types.SketchSymbol, len(arguments.List.ToSlice()))
+	for i, a := range arguments.List.ToSlice() {
 		bind, ok := a.(*types.SketchSymbol)
 		if !ok {
 			return nil, fmt.Errorf("fn statements must have a list of symbols as the first arg, the parameter list. Parameter %d (`%s`) has type %s", i, a.String(), a.Type())
@@ -247,7 +247,7 @@ func evalExportAs(operator *types.SketchSymbol, args []types.SketchType, env *en
 	}
 
 	var exported []string
-	for i, item := range exports.Items {
+	for i, item := range exports.List.ToSlice() {
 		export, ok := item.(*types.SketchSymbol)
 		if !ok {
 			return nil, fmt.Errorf(

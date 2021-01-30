@@ -29,7 +29,7 @@ func evalTCOSpecialForm(
 	if !ok {
 		return false, nil, nil, nil
 	}
-	items := tok.Items
+	items := tok.List.ToSlice()
 	if len(items) == 0 {
 		return false, nil, nil, nil
 	}
@@ -79,12 +79,9 @@ func evalLet(
 	if err != nil {
 		return nil, nil, err
 	}
-	// if len(bindingList.Items)%2 != 0 {
-	// 	return nil, nil, fmt.Errorf("let: first arg doesn't have an even number of items")
-	// }
 
 	childEnv := env.ChildEnv()
-	for i, item := range bindingList.Items {
+	for i, item := range bindingList.List.ToSlice() {
 		pair, ok := item.(*types.SketchList)
 		if !ok {
 			err := fmt.Errorf(
@@ -94,7 +91,7 @@ func evalLet(
 			return nil, nil, err
 		}
 
-		if len(pair.Items) != 2 {
+		if pair.List.Length() != 2 {
 			err := fmt.Errorf(
 				"let: the %s binding list item doesn't contain two items",
 				validation.ToOrdinal(i),
@@ -102,11 +99,11 @@ func evalLet(
 			return nil, nil, err
 		}
 
-		key, ok := pair.Items[0].(*types.SketchSymbol)
+		key, ok := pair.List.First().(*types.SketchSymbol)
 		if !ok {
 			return nil, nil, fmt.Errorf("let: the %s binding list item's first arg isn't a symbol", validation.ToOrdinal(i))
 		}
-		value, err := Eval(pair.Items[1], childEnv)
+		value, err := Eval(pair.List.Rest().First(), childEnv)
 		if err != nil {
 			return nil, nil, err
 		}

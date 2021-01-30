@@ -20,12 +20,13 @@ type EnvType interface {
 }
 
 type SketchList struct {
-	Items []SketchType
+	List *List
 }
 
 func (l *SketchList) String() string {
-	itemStrings := make([]string, len(l.Items))
-	for i, item := range l.Items {
+	items := l.List.ToSlice()
+	itemStrings := make([]string, len(items))
+	for i, item := range items {
 		itemStrings[i] = item.String()
 	}
 	return fmt.Sprintf("(%s)", strings.Join(itemStrings, " "))

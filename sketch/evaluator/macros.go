@@ -16,15 +16,15 @@ func quasiquote(ast types.SketchType) (types.SketchType, error) {
 		// them. However, there's also no harm harm in doing so.
 		// This return statements returns the AST version of (quote <ast>)
 		return &types.SketchList{
-			Items: []types.SketchType{
+			List: types.NewList([]types.SketchType{
 				&types.SketchSymbol{Value: "quote"},
 				ast,
-			},
+			}),
 		}, nil
 	}
 
 	// Okay - ast is a list
-	items := list.Items
+	items := list.List.ToSlice()
 
 	// If the list has no items, return it unmodified
 	if len(items) == 0 {
@@ -34,22 +34,22 @@ func quasiquote(ast types.SketchType) (types.SketchType, error) {
 	// If the first item in the list is the function `unquote`, return the
 	// first argument without quoting it.
 	if symbol, ok := items[0].(*types.SketchSymbol); ok && symbol.Value == "unquote" {
-		return list.Items[1], nil
+		return items[1], nil
 	}
 
 	// Okay - ast is a list, than hasn't been unquoted
-	quasiquoted := &types.SketchList{}
+	quasiquoted := &types.SketchList{List: types.NewEmptyList()}
 
 	for i := len(items) - 1; i >= 0; i-- {
 		element := items[i]
 
 		if args, ok := isSpliceUnquoteForm(element); ok {
 			quasiquoted = &types.SketchList{
-				Items: []types.SketchType{
+				List: types.NewList([]types.SketchType{
 					&types.SketchSymbol{Value: "concat"},
 					args[0],
 					quasiquoted,
-				},
+				}),
 			}
 			continue
 		}
@@ -60,11 +60,11 @@ func quasiquote(ast types.SketchType) (types.SketchType, error) {
 		}
 
 		quasiquoted = &types.SketchList{
-			Items: []types.SketchType{
+			List: types.NewList([]types.SketchType{
 				&types.SketchSymbol{Value: "cons"},
 				quasiqutoedElement,
 				quasiquoted,
-			},
+			}),
 		}
 
 	}
@@ -76,7 +76,7 @@ func isSpliceUnquoteForm(ast types.SketchType) (spliceUnquoteArgs []types.Sketch
 	if !ok {
 		return nil, false
 	}
-	items := list.Items
+	items := list.List.ToSlice()
 	if len(items) == 0 {
 		return nil, false
 	}
@@ -95,7 +95,7 @@ func isMacroCall(ast types.SketchType, env *environment.Env) bool {
 	if !ok {
 		return false
 	}
-	items := list.Items
+	items := list.List.ToSlice()
 	if len(items) == 0 {
 		return false
 	}
@@ -127,7 +127,7 @@ func macroExpand(ast types.SketchType, env *environment.Env) (types.SketchType, 
 		// happened
 		list := ast.(*types.SketchList)
 		// Again, we've already checked this - skip ok checking
-		macroName := list.Items[0].(*types.SketchSymbol)
+		macroName := list.List.First().(*types.SketchSymbol)
 
 		macroNameValue, err := env.Get(macroName.Value)
 		if err != nil {
@@ -136,7 +136,7 @@ func macroExpand(ast types.SketchType, env *environment.Env) (types.SketchType, 
 		}
 		macroFunc := macroNameValue.(*types.SketchFunction)
 
-		newAst, err := macroFunc.Func(list.Items[1:]...)
+		newAst, err := macroFunc.Func(list.List.Rest().ToSlice()...)
 		if err != nil {
 			return nil, err
 		}

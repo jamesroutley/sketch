@@ -22,11 +22,13 @@ func PrettyPrintTopLevelDo(ast types.SketchType) string {
 		return PrettyPrint(ast)
 	}
 
-	if len(list.Items) == 0 {
+	items := list.List.ToSlice()
+
+	if len(items) == 0 {
 		return PrettyPrint(ast)
 	}
 
-	symbol, ok := list.Items[0].(*types.SketchSymbol)
+	symbol, ok := items[0].(*types.SketchSymbol)
 	if !ok {
 		return PrettyPrint(ast)
 	}
@@ -39,9 +41,9 @@ func PrettyPrintTopLevelDo(ast types.SketchType) string {
 	// separating each with a newline.
 	var b bytes.Buffer
 
-	items := list.Items[1:]
+	rest := items[1:]
 
-	for i, expr := range items {
+	for i, expr := range rest {
 		fmt.Fprintln(&b, PrettyPrint(expr))
 
 		// Comments above top level statements should 'stick' to them
@@ -52,7 +54,7 @@ func PrettyPrintTopLevelDo(ast types.SketchType) string {
 		// Imports should be on consecutive lines. We check if the next item is
 		// an import rather than this one so the final import has a newline
 		// below it
-		if i+1 < len(items) && isImportExpression(items[i+1]) {
+		if i+1 < len(rest) && isImportExpression(rest[i+1]) {
 			continue
 		}
 
@@ -67,7 +69,7 @@ func isImportExpression(expr types.SketchType) bool {
 	if !ok {
 		return false
 	}
-	items := list.Items
+	items := list.List.ToSlice()
 	if len(items) == 0 {
 		return false
 	}

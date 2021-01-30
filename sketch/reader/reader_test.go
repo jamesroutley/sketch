@@ -78,6 +78,22 @@ func TestRead_HashMap(t *testing.T) {
 	runTests(t, cases)
 }
 
+func TestRead_List(t *testing.T) {
+	cases := []*TestCase{
+		{
+			name:  "list",
+			input: "(fold-left + 0 (list 1 2 3 4))",
+			expected: sList(
+				sSym("fold-left"),
+				sSym("+"),
+				sInt(0),
+				sList(sSym("list"), sInt(1), sInt(2), sInt(3), sInt(4)),
+			),
+		},
+	}
+	runTests(t, cases)
+}
+
 func TestReadWithoutReaderMacros(t *testing.T) {
 	cases := []*TestCase{
 		{

@@ -33,7 +33,7 @@ func prettyPrint(ast types.SketchType, indent int) string {
 // forms. For example, it might be nice to always print `case` statements on
 // different lines.
 func prettyPrintList(list *types.SketchList, indent int) string {
-	items := list.Items
+	items := list.List.ToSlice()
 	if len(items) == 0 {
 		return list.String()
 	}
