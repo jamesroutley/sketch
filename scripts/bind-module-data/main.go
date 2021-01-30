@@ -14,6 +14,7 @@ var modules = []string{
 	"./sketch/core",
 	"./sketch/stdlib/str",
 	"./sketch/stdlib/file",
+	"./sketch/stdlib/queue",
 	"./sketch/stdlib/regex",
 }
 
@@ -67,6 +68,7 @@ func bindModuleData(module string) error {
 		// Format Sketch files before reading
 		sketchFmtCmd := exec.Command("sketch", "format", "-w", sketchFile)
 		if err := sketchFmtCmd.Run(); err != nil {
+			log.Println("Error running sketch format")
 			return err
 		}
 
@@ -102,6 +104,7 @@ func bindModuleData(module string) error {
 	// Format new Go file
 	goFmtCmd := exec.Command("gofmt", "-w", outputFile)
 	if err := goFmtCmd.Run(); err != nil {
+		log.Println("Error running gofmt")
 		return err
 	}
 

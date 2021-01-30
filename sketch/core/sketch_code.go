@@ -98,4 +98,12 @@ nil)"))))
     key"
   (l)
   (hashmap-keys (apply hashset l)))
+
+(defn
+  reverse
+  "Returns a new list, with the items in reverse order"
+  (lst)
+  (let
+    ((reverse-recur (fn (l reversed) (if (empty? l) reversed (reverse-recur (rest l) (cons (first l) reversed))))))
+    (reverse-recur lst (list))))
 `

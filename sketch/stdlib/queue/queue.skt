@@ -1,0 +1,70 @@
+(defn
+  new
+  "Returns a new queue. A queue is a datastructure which stores a collection
+  of items. New items are added to the back of the queue, and items can only
+  be taken from the front of the queue. Queues are 'first in first out'.
+
+  Internally, queues are stored as two lists, representing the front and the
+  back of the queue. Behind the scenes, items are taken from the queue by
+  calling (first front), in O(1). Items are put onto the queue by calling
+  (cons item back), also in O(1). As items are taken off the queue, the 'front'
+  list will empty. Once it does, we reverse the 'back' list, and make that the
+  new front. This is more expensive, but the queue still offers amortized
+  constant time reading and writing.
+
+  These specific details are an implementation detail, and shouldn't be relied
+  on. The correct way to interact with the queue is to use the exported
+  functions."
+  (& items)
+  (let ((front items) (back (list))) (list front back)))
+
+(defn
+  queue-empty?
+  "Returns whether the queue is empty - i.e. both the front and back lists are
+  empty."
+  (q)
+  (let
+    ((front (first q)) (back (second q)))
+    (and (empty? front) (empty? back))))
+
+(defn
+  rebalance
+  "When the front of the queue empties, we need to reverse the back, and make
+  it the new front. This function does that."
+  (q)
+  (let
+    ((front (first q)) (back (second q)))
+    (cond
+      ((queue-empty? q) q)
+      ((not (empty? front)) q) ; Front isn't empty - don't do anything
+      ("else" (list (reverse back) (list))))))
+
+(defn
+  put
+  "Inserts an item into the end of the queue"
+  (q item)
+  (let ((front (first q)) (back (second q))) (list front (cons item back))))
+
+(defn
+  head
+  "Returns the item at the front of the queue"
+  (q)
+  (let
+    ((front (first q)) (back (second q)))
+    (cond
+      ((queue-empty? q) (error "Can't peek an empty queue"))
+      ((empty? front) (head (rebalance q)))
+      ("else" (first front)))))
+
+(defn
+  tail
+  "Returns a new queue, without the item at the front"
+  (q)
+  (let
+    ((front (first q)) (back (second q)))
+    (cond
+      ((queue-empty? q) (error "Can't tail an empty queue"))
+      ((empty? front) (tail (rebalance q)))
+      ("else" (list (rest front) back)))))
+
+(export-as queue (new put head tail))

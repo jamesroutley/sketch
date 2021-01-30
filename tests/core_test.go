@@ -145,6 +145,22 @@ func TestCore(t *testing.T) {
 			input:    `(int "+1")`,
 			expected: "1",
 		},
+
+		{
+			name:     "reverse",
+			input:    "(reverse (list 1 2 3))",
+			expected: "(3 2 1)",
+		},
+		{
+			name:     "reverse single item",
+			input:    "(reverse (list 1))",
+			expected: "(1)",
+		},
+		{
+			name:     "reverse empty list",
+			input:    "(reverse (list))",
+			expected: "()",
+		},
 	}
 	runTests(t, cases)
 }
