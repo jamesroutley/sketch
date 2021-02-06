@@ -1,0 +1,109 @@
+(defn list-first first)
+(defn list-rest rest)
+
+(defn third (lst) (nth lst 2))
+
+(defn fourth (lst) (nth lst 3))
+
+(defn left (node) (list-first node))
+
+(defn right (node) (second node))
+
+(defn key (node) (third node))
+
+(defn value (node) (fourth node))
+
+(defn new-node (left right key value) (list left right key value))
+
+(defn
+  find
+  (node k)
+  (cond
+    ((= nil node) (error "not found"))
+    ((> k (key node)) (find (right node) k))
+    ((< k (key node)) (find (left node) k))
+    ("else" (value node))))
+
+(defn
+  leaf?
+  (node)
+  (let
+    ((left (list-first node)) (right (second node)))
+    (and (= nil left) (= nil right))))
+
+(defn
+  tree-first
+  (node)
+  (let
+    ((left (list-first node))
+      (right (second node))
+      (key (third node))
+      (value (fourth node)))
+    (cond
+      ((= nil node) (error "empty tree"))
+      ((= nil left) (list key value))
+      ("else" (tree-first left)))))
+
+(defn
+  insert
+  (node k v)
+  (if
+    (= nil node)
+    (new-node nil nil k v)
+    (let
+      ((left (list-first node))
+        (right (second node))
+        (key (third node))
+        (value (fourth node)))
+      (cond
+        ((> k key) (new-node left (insert right k v) key value))
+        ((< k key) (new-node (insert left k v) right key value))
+        ("else" (new-node left right k v))))))
+
+(defn
+  delete
+  (node k)
+  (if
+    (= nil node) ; key not found - return node unmodified
+    node
+    (let
+      ((left (list-first node))
+        (right (second node))
+        (key (third node))
+        (value (fourth node)))
+      (cond
+        ((> k key) (new-node left (delete right k) key value)) ; Recurse down to our node
+        ((< k key) (new-node (delete left k) right key value))
+        ("else" ; Okay - we've found it. There are three possible cases
+          (cond
+            ((leaf? node) nil) ; Leaf node - return nil to delete it
+            ((= nil right) right)
+            ((= nil left) left)
+            ("else" ; Find subsequent key and value
+              (let
+                ((subsequent (tree-first right))
+                  (subsequent-key (list-first subsequent))
+                  (subsequent-value (second subsequent)))
+                (new-node
+                  left
+                  (delete right subsequent-key)
+                  subsequent-key
+                  subsequent-value)))))))))
+
+(def
+  t
+  (new-node (new-node nil nil 0 "val0") (new-node nil nil 3 "val3") 1 "val1"))
+
+(prn t)
+
+(prn (insert t 1 "val1a"))
+
+(prn (insert t 4 "val4"))
+
+(prn t)
+
+(prn (delete t 0))
+
+(prn (delete t 3))
+
+(prn (delete t 1))

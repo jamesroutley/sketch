@@ -79,7 +79,7 @@ func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environm
 	if docstringSet {
 		str, ok := args[0].(*types.SketchString)
 		if !ok {
-			return nil, fmt.Errorf("if a fn expression has three arguments, the 1st should be a docstrig with type string. Got %s", args[0].Type())
+			return nil, fmt.Errorf("if a fn expression has three arguments, the 1st should be a docstrig with type string. Got %s. Args: %s", args[0].Type(), args)
 		}
 		docstring = str.Value
 		// We've processed the first argument pop it off the list for the rest
