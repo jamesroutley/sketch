@@ -76,7 +76,7 @@ func nth(args ...types.SketchType) (types.SketchType, error) {
 
 	if n.Value >= len(items) {
 		return nil, fmt.Errorf(
-			"nth: index out of range - %d, with length %d", n.Value, len(items),
+			"nth: index out of range - %d, with length %d, %s", n.Value, len(items), items,
 		)
 	}
 

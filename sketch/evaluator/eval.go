@@ -156,7 +156,10 @@ func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) 
 
 			function, ok := list.List.First().(*types.SketchFunction)
 			if !ok {
-				return nil, fmt.Errorf("Error evaluating list %s. I expected the first item in the list to be a function, but it's a %s.", list, list.List.First().Type())
+				return nil, fmt.Errorf(
+					"error evaluating list %s: expected the first item in the list to be a function, but it's a %s",
+					list, list.List.First().Type(),
+				)
 			}
 
 			if !function.TailCallOptimised {

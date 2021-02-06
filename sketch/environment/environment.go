@@ -33,15 +33,8 @@ func NewFunctionEnv(parent *Env, parameters []*types.SketchSymbol, arguments []t
 		Data:  map[string]types.SketchType{},
 	}
 
-	variadicArguments := false
-	for _, param := range parameters {
-		if param.Value == "&" {
-			variadicArguments = true
-			break
-		}
-	}
-	if !variadicArguments && (len(parameters) != len(arguments)) {
-		return nil, fmt.Errorf("can't create env - num parameters (%d) != num arguments (%d)", len(parameters), len(arguments))
+	if err := validateBindList(parameters, arguments); err != nil {
+		return nil, err
 	}
 
 	for i, symbol := range parameters {
@@ -68,6 +61,35 @@ func NewFunctionEnv(parent *Env, parameters []*types.SketchSymbol, arguments []t
 		env.Set(symbol.Value, arguments[i])
 	}
 	return env, nil
+}
+
+func validateBindList(parameters []*types.SketchSymbol, arguments []types.SketchType) error {
+	variadicArguments := false
+	numRequiredArgs := 0 // Only valid if variadicArguments == true
+	for i, param := range parameters {
+		if param.Value != "&" {
+			continue
+		}
+		variadicArguments = true
+		if collectors := parameters[i+1:]; len(collectors) != 1 {
+			return fmt.Errorf("there can only be one collector symbol after the & in a function definition, got %s", collectors)
+		}
+		numRequiredArgs = i
+	}
+	if !variadicArguments {
+		if len(parameters) != len(arguments) {
+			return fmt.Errorf("can't create env - num parameters (%d) != num arguments (%d)", len(parameters), len(arguments))
+		}
+		return nil
+	}
+
+	// variadicArguments == true from here on in
+
+	if numRequiredArgs > len(arguments) {
+		return fmt.Errorf("can't create env - num required parameters (%d) > num arguments (%d)", numRequiredArgs, len(arguments))
+	}
+
+	return nil
 }
 
 func (e *Env) Set(key string, value types.SketchType) {
