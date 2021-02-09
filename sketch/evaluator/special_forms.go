@@ -127,6 +127,7 @@ func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environm
 		// optimise it.
 		Func: func(exprs ...types.SketchType) (types.SketchType, error) {
 			childEnv, err := environment.NewFunctionEnv(
+				"anonymous function",
 				env, binds, exprs,
 			)
 			if err != nil {

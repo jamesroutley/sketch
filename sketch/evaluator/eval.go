@@ -6,6 +6,7 @@ import (
 
 	"github.com/jamesroutley/sketch/sketch/core"
 	"github.com/jamesroutley/sketch/sketch/environment"
+	"github.com/jamesroutley/sketch/sketch/errors"
 	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/jamesroutley/sketch/sketch/types"
 )
@@ -146,7 +147,7 @@ func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) 
 		{
 			newAST, err := evalAST(ast, env)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, env)
 			}
 
 			list, ok := newAST.(*types.SketchList)
@@ -156,17 +157,27 @@ func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) 
 
 			function, ok := list.List.First().(*types.SketchFunction)
 			if !ok {
-				return nil, fmt.Errorf("Error evaluating list %s. I expected the first item in the list to be a function, but it's a %s.", list, list.List.First().Type())
+				err := fmt.Errorf(
+					"error evaluating list %s: expected the 1st item in the list to be a function, but it's a %s",
+					list, list.List.First().Type(),
+				)
+				return nil, errors.Wrap(err, env)
 			}
 
 			if !function.TailCallOptimised {
-				return function.Func(list.List.Rest().ToSlice()...)
+				fmt.Println("calling", function.BoundName)
+				newAST, err := function.Func(list.List.Rest().ToSlice()...)
+				if err != nil {
+					return nil, errors.Wrap(err, env)
+				}
+				return newAST, nil
 			}
 
 			// Function is tail call optimised.
 			// Construct the correct environment it should be run in
 			childEnv, err := environment.NewFunctionEnv(
-				function.Env.(*environment.Env), function.Params, list.List.Rest().ToSlice(),
+				function.BoundName, function.Env.(*environment.Env),
+				function.Params, list.List.Rest().ToSlice(),
 			)
 			if err != nil {
 				return nil, err
@@ -174,6 +185,7 @@ func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) 
 			// TCO
 			ast = function.AST
 			env = childEnv
+			fmt.Println("calling", function.BoundName)
 			continue
 		}
 	}
@@ -188,6 +200,15 @@ func evalAST(ast types.SketchType, env *environment.Env) (types.SketchType, erro
 		value, err := env.Get(tok.Value)
 		if err != nil {
 			return nil, err
+		}
+		// If the symbol evaluated to a function, bind the symbol's value to
+		// it, so we can use it in stack traces later.
+		// TODO: I suspect this isn't treadsafe, because we're mutating the
+		// function object
+		function, ok := value.(*types.SketchFunction)
+		if ok {
+			function.BoundName = tok.Value
+			return function, nil
 		}
 		return value, nil
 	case *types.SketchList:

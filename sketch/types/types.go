@@ -162,6 +162,7 @@ type SketchFunction struct {
 	Env               EnvType
 	IsMacro           bool
 	Docs              string
+	BoundName         string
 }
 
 func (f *SketchFunction) String() string {

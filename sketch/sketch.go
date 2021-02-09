@@ -4,10 +4,12 @@ package sketch
 import (
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 
 	"github.com/chzyer/readline"
 	"github.com/jamesroutley/sketch/sketch/environment"
+	"github.com/jamesroutley/sketch/sketch/errors"
 	"github.com/jamesroutley/sketch/sketch/evaluator"
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
@@ -25,7 +27,10 @@ func RunFile(filename string) error {
 	}
 
 	_, err = evaluator.Evaluate(ast)
-	return err
+	if err != nil {
+		formatError(err)
+	}
+	return nil
 }
 
 func Repl() error {
@@ -72,4 +77,38 @@ func Rep(s string, env *environment.Env) (string, error) {
 		return "", err
 	}
 	return printer.PrStr(evaluated), nil
+}
+
+func formatError(err error) {
+	if err == nil {
+		return
+	}
+
+	fmt.Println(err)
+
+	skerr, ok := err.(*errors.Error)
+	if !ok {
+		return
+	}
+
+	// If we've got it, print the stack trace pulled from the environment
+	// list
+	for env := skerr.Env; env != nil; env = env.Outer {
+		// TODO
+		// if !env.FunctionEnv {
+		// 	continue
+		// }
+		fmt.Printf("- %+v\n", env.FunctionName)
+		fmt.Printf("%+v\n", envKeys(env))
+	}
+}
+
+func envKeys(env *environment.Env) (keys []string) {
+	for key := range env.Data {
+		keys = append(keys, key)
+	}
+
+	sort.Strings(keys)
+
+	return keys
 }

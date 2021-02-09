@@ -15,6 +15,9 @@ import (
 type Env struct {
 	Outer *Env
 	Data  map[string]types.SketchType
+	// Was this environment created for a function scope?
+	FunctionEnv  bool
+	FunctionName string
 }
 
 func NewEnv() *Env {
@@ -27,10 +30,12 @@ func NewEnv() *Env {
 // NewFunctionEnv creates a new environment with `parent` as its outer
 // environment. It also takes a a list of arguments, which should be bound to
 // the symbols in `parameters` one by one.
-func NewFunctionEnv(parent *Env, parameters []*types.SketchSymbol, arguments []types.SketchType) (*Env, error) {
+func NewFunctionEnv(name string, parent *Env, parameters []*types.SketchSymbol, arguments []types.SketchType) (*Env, error) {
 	env := &Env{
-		Outer: parent,
-		Data:  map[string]types.SketchType{},
+		Outer:        parent,
+		Data:         map[string]types.SketchType{},
+		FunctionEnv:  true,
+		FunctionName: name,
 	}
 
 	variadicArguments := false
