@@ -162,6 +162,11 @@ type SketchFunction struct {
 	Env               EnvType
 	IsMacro           bool
 	Docs              string
+	// Functions themselves aren't really named. In Sketch, a function object
+	// is bound to a symbol, which is how you refer to that function.
+	// This variable specifies what the function's bound name is, which is
+	// useful for debugging.
+	BoundName string
 }
 
 func (f *SketchFunction) String() string {

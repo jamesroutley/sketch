@@ -134,6 +134,7 @@ func evalFn(operator *types.SketchSymbol, args []types.SketchType, env *environm
 			}
 			return Eval(args[1], childEnv)
 		},
+		BoundName: "anonymous function",
 	}, nil
 }
 

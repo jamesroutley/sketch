@@ -6,6 +6,7 @@ import (
 
 	"github.com/jamesroutley/sketch/sketch/core"
 	"github.com/jamesroutley/sketch/sketch/environment"
+	"github.com/jamesroutley/sketch/sketch/errors"
 	"github.com/jamesroutley/sketch/sketch/reader"
 	"github.com/jamesroutley/sketch/sketch/types"
 )
@@ -53,7 +54,17 @@ func Evaluate(ast types.SketchType) (types.SketchType, error) {
 // 3. Lists: by default, they're treated as function calls - each item is
 // evaluated, and the first item (the function itself) is called with the rest
 // of the items as arguments.
-func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) {
+func Eval(
+	ast types.SketchType, env *environment.Env,
+) (evaluatedAST types.SketchType, err error) {
+	callStack := []string{}
+	// Wrap any errors returned with the call stack
+	// TODO: this is kinda gross
+	defer func() {
+		if err != nil {
+			err = errors.Wrap(err, callStack)
+		}
+	}()
 	// This whlie loop enables tail call optimisation (TCO), where we mutate
 	// `ast` and `env` and jump back to the top, rather than recursively
 	// calling `Eval`. This stops a stack frame from being pushed, and lets us
@@ -163,20 +174,31 @@ func Eval(ast types.SketchType, env *environment.Env) (types.SketchType, error) 
 			}
 
 			if !function.TailCallOptimised {
-				return function.Func(list.List.Rest().ToSlice()...)
+				// TODO: once we've got real stack frames, mention that this is
+				// no TCO
+				callStack = append(callStack, function.BoundName)
+				newAST, err := function.Func(list.List.Rest().ToSlice()...)
+				if err != nil {
+					return nil, errors.Wrap(err, callStack)
+				}
+				return newAST, nil
 			}
 
 			// Function is tail call optimised.
 			// Construct the correct environment it should be run in
 			childEnv, err := environment.NewFunctionEnv(
-				function.Env.(*environment.Env), function.Params, list.List.Rest().ToSlice(),
+				function.Env.(*environment.Env), function.Params,
+				list.List.Rest().ToSlice(),
 			)
 			if err != nil {
 				return nil, err
 			}
+
 			// TCO
 			ast = function.AST
 			env = childEnv
+			// TODO: once we've got real stack frames, mention that this is TCO
+			callStack = append(callStack, function.BoundName)
 			continue
 		}
 	}
@@ -191,6 +213,15 @@ func evalAST(ast types.SketchType, env *environment.Env) (types.SketchType, erro
 		value, err := env.Get(tok.Value)
 		if err != nil {
 			return nil, err
+		}
+		// If the symbol evaluated to a function, bind the symbol's value to
+		// it, so we can use it in stack traces later.
+		// TODO: I suspect this isn't treadsafe, because we're mutating the
+		// function object
+		function, ok := value.(*types.SketchFunction)
+		if ok {
+			function.BoundName = tok.Value
+			return function, nil
 		}
 		return value, nil
 	case *types.SketchList:
