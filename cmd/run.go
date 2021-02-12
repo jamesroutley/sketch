@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	"os"
 
 	"github.com/jamesroutley/sketch/sketch"
 	"github.com/spf13/cobra"
@@ -15,7 +15,8 @@ var runCmd = &cobra.Command{
 	// Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := sketch.RunFile(args[0]); err != nil {
-			log.Fatal(err)
+			printError(err)
+			os.Exit(1)
 		}
 	},
 }

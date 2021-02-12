@@ -8,7 +8,6 @@ import (
 
 	"github.com/chzyer/readline"
 	"github.com/jamesroutley/sketch/sketch/environment"
-	"github.com/jamesroutley/sketch/sketch/errors"
 	"github.com/jamesroutley/sketch/sketch/evaluator"
 	"github.com/jamesroutley/sketch/sketch/printer"
 	"github.com/jamesroutley/sketch/sketch/reader"
@@ -26,19 +25,7 @@ func RunFile(filename string) error {
 	}
 
 	_, err = evaluator.Evaluate(ast)
-
-	xerr, ok := err.(*errors.Error)
-	if !ok {
-		return err
-	}
-
-	fmt.Println(xerr)
-	fmt.Printf("\nCall stack:\n")
-	for i := len(xerr.Stack) - 1; i >= 0; i-- {
-		fmt.Println("  ", xerr.Stack[i])
-	}
-
-	return nil
+	return err
 }
 
 func Repl() error {
