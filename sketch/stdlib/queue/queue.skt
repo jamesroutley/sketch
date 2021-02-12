@@ -67,4 +67,11 @@
       ((empty? front) (tail (rebalance q)))
       ("else" (list (rest front) back)))))
 
-(export-as queue (new put head tail))
+(defn len (q) (reduce + (map length q)))
+
+(defn
+  to-list
+  (q)
+  (if (queue-empty? q) (list) (cons (head q) (to-list (tail q)))))
+
+(export-as queue (new put head tail len queue-empty? to-list))

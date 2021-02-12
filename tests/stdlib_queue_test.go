@@ -34,6 +34,16 @@ func TestQueue(t *testing.T) {
 			input:    "(queue.tail (queue.put (queue.put (queue.new) 1) 2))",
 			expected: "((2) ())",
 		},
+		{
+			name:     "Length",
+			input:    "(queue.len (queue.new 1 2 3))",
+			expected: "3",
+		},
+		{
+			name:     "To list",
+			input:    "(queue.to-list (queue.new 1 2 3))",
+			expected: "(1 2 3)",
+		},
 	}
 
 	runTestsWithImports(t, cases, "queue")

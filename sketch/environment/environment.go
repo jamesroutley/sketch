@@ -112,7 +112,21 @@ func (e *Env) Get(key string) (types.SketchType, error) {
 	if err != nil {
 		return nil, err
 	}
-	return env.(*Env).Data[key], nil
+
+	value, ok := env.(*Env).Data[key]
+	if !ok {
+		panic("item not found in environment")
+	}
+	// If the symbol evaluated to a function, bind the symbol's value to
+	// it, so we can use it in stack traces later.
+	// TODO: I suspect this isn't treadsafe, because we're mutating the
+	// function object
+	function, ok := value.(*types.SketchFunction)
+	if ok {
+		function.BoundName = key
+		return function, nil
+	}
+	return value, nil
 }
 
 func (e *Env) ChildEnv() *Env {

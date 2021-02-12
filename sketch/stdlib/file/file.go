@@ -12,7 +12,10 @@ import (
 var EnvironmentItems = map[string]types.SketchType{}
 
 func register(symbol string, f func(...types.SketchType) (types.SketchType, error)) {
-	EnvironmentItems[symbol] = &types.SketchFunction{Func: f}
+	EnvironmentItems[symbol] = &types.SketchFunction{
+		Func:      f,
+		BoundName: symbol,
+	}
 }
 
 func init() {

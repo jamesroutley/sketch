@@ -191,7 +191,7 @@ func Eval(
 				list.List.Rest().ToSlice(),
 			)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("error calling '%s': %w", function.BoundName, err)
 			}
 
 			// TCO
@@ -213,15 +213,6 @@ func evalAST(ast types.SketchType, env *environment.Env) (types.SketchType, erro
 		value, err := env.Get(tok.Value)
 		if err != nil {
 			return nil, err
-		}
-		// If the symbol evaluated to a function, bind the symbol's value to
-		// it, so we can use it in stack traces later.
-		// TODO: I suspect this isn't treadsafe, because we're mutating the
-		// function object
-		function, ok := value.(*types.SketchFunction)
-		if ok {
-			function.BoundName = tok.Value
-			return function, nil
 		}
 		return value, nil
 	case *types.SketchList:
