@@ -1,0 +1,51 @@
+(import "file")
+(import "queue")
+
+(def
+  nums
+  (map int (file.read-lines "examples/advent-of-code/input/9a.txt")))
+
+(defn
+  sums-of-combinations-recur
+  (lst)
+  (if
+    (empty? lst)
+    ()
+    (list
+      (map (fn (item) (+ (first lst) item)) (rest lst))
+      (sums-of-combinations-recur (rest lst)))))
+
+(defn sums-of-combinations (lst) (flatten (sums-of-combinations-recur lst)))
+
+(defn
+  valid?
+  (n previous)
+  (> (length (filter (fn (x) (= x n)) (sums-of-combinations previous))) 0))
+
+(defn
+  process-recur
+  (preamble stream preamble-size)
+  (if
+    (< (queue.len preamble) preamble-size)
+    (process-recur
+      (queue.put preamble (first stream))
+      (rest stream)
+      preamble-size)
+    (if
+      (not (valid? (first stream) (queue.to-list preamble)))
+      (first stream)
+      (process-recur
+        (queue.put (queue.tail preamble) (first stream))
+        (rest stream)
+        preamble-size))))
+
+(defn
+  process
+  (stream preamble-size)
+  (process-recur (queue.new) stream preamble-size))
+
+(prn (process nums 25))
+
+; (prn (sums-of-combinations (list 1 2 2 4)))
+; (prn (valid? 2 (list 1 2)))
+; (prn (process nums))
